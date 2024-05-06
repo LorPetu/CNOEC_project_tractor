@@ -39,36 +39,23 @@ vf      =       4;
 zf      =       [xf;yf;psif;vf];
 
 %% Control problem parameters
-Ts_p          =   0.25;                       % Sampling time of comutation of input
-Ts_s         =   0.025;                        % Sampling time of the simulation
-Q           =   diag([1;1;1;1]);       % Tracking error weight
-Qf          =   diag([1;1;1;1]*1e5);       % Terminal weight
-Qdot        =   diag([0;0;1;1]*10);
-R           =   diag([1;1]*10);
+Ts_p          =   0.25;                       % Sampling time of computation of input
+% Ts_s         =   0.025;                        % Sampling time of the simulation
 
 Tend        =   4;                         % Time horizon
-Ns          =   Tend/Ts_s;                    % Simulation steps
+% Ns          =   Tend/Ts_s;                    % Simulation steps
 Np          =   Tend/Ts_p;                   % Prediction steps
+
+time_FFD    =   [0:0.01:(Np-1)*Ts_p];
+Nblock      =   Ts_p/0.01;
+Nsim_FFD    =   length(time_FFD);
 
 vsat        =   10;                     % Input saturation
 asat        =   3;                      % Cart position limits
 deltasat    =   30*pi/180;
 
-alpha       =   1e1;               % Barrier function scaling
-beta        =   1e1;                 % Barrier function coefficient
-
 % Optimization_opt
 
-Optimization_opt.Q          = Q;
-Optimization_opt.Qf         = Qf;
-Optimization_opt.Qdot       = Qdot;
-Optimization_opt.R          = R;
-Optimization_opt.vsat       = vsat;
-Optimization_opt.deltasat   = deltasat;
-Optimization_opt.asat       = asat;
-Optimization_opt.alpha      = alpha;
-Optimization_opt.beta       = beta;
-Optimization_opt.Ts_s   = Ts_s;
 Optimization_opt.Ts_p   = Ts_p;
 Optimization_opt.Tend   = Tend;
 
@@ -78,9 +65,24 @@ Optimization_opt.Tend   = Tend;
                 zeros(Np,1)];      
 %U0=Ustar
 
+%% Linear Constraints
+
+C       =       [-eye(2*Np)
+                eye(2*Np)];
+d       =       [-deltasat*ones(Np,1);
+                 -asat*ones(Np,1);
+                 deltasat*ones(Np,1);
+                 asat*ones(Np,1);];
+
+% Number of equality constraints
+p = 4;
+
+% Number of inequality constraints
+q = 2*Nsim_FFD;
+
 %% Solution -  BFGS
 % Initialize solver options
-myoptions               =   myoptimset;
+myoptions               =   myoptimset_const;
 myoptions.Hessmethod  	=	'BFGS';
 myoptions.gradmethod  	=	'CD';
 myoptions.graddx        =	2^-17;
@@ -90,9 +92,9 @@ myoptions.ls_c          =	.01;
 myoptions.ls_nitermax   =	1e2;
 myoptions.nitermax      =	1e3;
 myoptions.xsequence     =	'off';
-myoptions.outputfcn     =   @(U)Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimization_opt);
+% myoptions.outputfcn     =   @(U)Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimization_opt);
 
 % Run solver
-[xstar,fxstar,niter,exitflag,xsequence] = myfmincon(@(x)tractor_cost_constr(x,Ts,Np,th),x0,[],[],C,d,0,q,myoptions);
+[xstar,fxstar,niter,exitflag,xsequence] = myfmincon(@(U)tractor_cost_constr(U,Ts_p,Np,parameters),U0,[],[],C,d,p,q,myoptions);
 
 
