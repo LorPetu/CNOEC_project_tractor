@@ -1,64 +1,49 @@
-function v = tractor_cost_constr(U,Ts,Np,th)
+function v = tractor_cost_constr(U,z0,zf,parameters,Optimization_opt)
 % Function that computes the trajectory of the tractor exiting from a row
 % and the constraint
 
+vsat = Optimization_opt.vsat;
+deltasat = Optimization_opt.deltasat;
+asat = Optimization_opt.asat;
+Ts_s=Optimization_opt.Ts_s;
+Ts_p=Optimization_opt.Ts_p;
+Tend=Optimization_opt.Tend;  
+Ns = Optimization_opt.Ns;
+Np = Optimization_opt.Np;
 
-vsat        =   10;                     % Input saturation
-asat        =   3;                      % Cart position limits
-deltasat    =   30*pi/180;
 
-%% initial states
-xt        =      0;                 % inertial X position (m)
-yt        =      0;                 % inertial Y position (m)
-psit      =      pi/2;              % yaw angle (rad)
-vt        =      4;                     % body x velocity (m/s) 
 
-z0=[xt;yt;psit;vt];
-%% final state
-xf      =       3;
-yf      =       0;
-psif    =       -pi/2;
-vf      =       4;
-
-zf      =       [xf;yf;psif;vf];
-
-%% Build vector of inputs
-t_in        =   [0:Ts:(Np-1)*Ts]';
 u_in        =   [U(1:Np,1)';
                 U(Np+1:end,1)'];
 
 
 %% Run simulation with FFD
-time_FFD    =   [0:0.01:(Np-1)*Ts];
-Nblock      =   Ts/0.01;
-Nsim_FFD    =   length(time_FFD);
-
-z_sim      =   zeros(4,Nsim_FFD);
+zdot        =   zeros(4,1);
+e           =   zeros(4,1);
+ztemp       =   z0; 
+z_sim      =   zeros(4,Ns+1);
 z_sim(:,1) =   z0;
 f=0;
-for ind=2:Nsim_FFD
-    u                  =   u_in(:,1+floor(time_FFD(ind)/Ts));
-    zdot               =   tractor_model(z_sim(:,ind-1),u,th);
-    z_sim(:,ind)       =   z_sim(:,ind-1)+Ts/Nblock*zdot;
+for ind=2:Ns+1
+    u               =  u_in(:,ceil((ind-1)*Ts_s/Ts_p));
+    zdot               =   tractor_model(z_sim(:,ind-1),u,parameters);
+    z_sim(:,ind)       =   z_sim(:,ind-1)+Ts_s*zdot;
+    e = z_sim(:, ind-1)-zf;
 
-    f= f +  1/(z_sim(4,ind)*cos(z_sim(3,ind)))*Ts/Nblock*zdot(1);
-end
+    f= f + 1e-2*(e'*e); 
+end 
 
-X_sim       =   z_sim(1,1:end)';
-Y_sim       =   z_sim(2,1:end)';
+delta_delta=u_in(1,2:end)-u_in(1,1:end-1);
+delta_acc=u_in(2,2:end)-u_in(2,1:end-1);
 
-
+f=f+(delta_delta*delta_delta')+1e3*(delta_acc*delta_acc');
 %% Equality constraints g(x)
-g = [z_sim(:,end)-zf(:,1)];
+g = [z_sim(:,end)-zf];
 
 %% Inequality constraints h(x)
 
-h = [(z_sim(4,:)+vsat*ones(1,Nsim_FFD))';
-    (-z_sim(4,:)+vsat*ones(1,Nsim_FFD))'];
-%% Compute cost function f(x)
-% Come funziona questa?
-% delta_diff  =   (x(Np+5:end,1)-x(Np+4:end-1,1));
-% Td_diff     =   (x(5:Np+3,1)-x(4:Np+2,1));
+h = [(z_sim(4,2:end)+0*ones(1,Ns))';
+    (-z_sim(4,2:end)+vsat*ones(1,Ns))'];
 
 %% Stack cost and constraints
 v           =   [f;g;h];

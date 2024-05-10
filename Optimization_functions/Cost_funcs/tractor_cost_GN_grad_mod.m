@@ -31,6 +31,8 @@ F           =   [zeros(4*Ns,1);
                 zeros(Ns,1);         %alpha*exp(-beta*(deltasat-U(1,1)));
                 zeros(Ns,1);         %alpha*exp(-beta*(asat+U(2,1)));
                 zeros(Ns,1);          %alpha*exp(-beta*(asat+U(2,1)));
+                zeros(Ns,1);
+                zeros(Ns,1);
                 zeros(4,1);];
 
 
@@ -51,11 +53,13 @@ F           =   [zeros(4*Ns,1);
         F(8*Ns+2*Ns+3*Ns+(ind-1),1)                    =   alpha*exp(-beta*(deltasat-u(1)));
         F(8*Ns+2*Ns+4*Ns+(ind-1),1)                    =   alpha*exp(-beta*(asat+u(2)));
         F(8*Ns+2*Ns+5*Ns+(ind-1),1)                    =   alpha*exp(-beta*(asat-u(2)));
-   
+        F(8*Ns+2*Ns+6*Ns+(ind-1),1)                    =   0;%alpha*exp(-beta*(0+ztemp(1,1)));
+        F(8*Ns+2*Ns+7*Ns+(ind-1),1)                    =   0;%alpha*exp(-beta*(6-ztemp(2,1)));
+
     end 
 a=(ind-1)*Ts_s;
 % Update the terminal cost and its Jacobian
-F(8*Ns+2*Ns+6*Ns+1:8*Ns+2*Ns+6*Ns+4,1)                =   Qf*e;
+F(8*Ns+2*Ns+8*Ns+1:8*Ns+2*Ns+8*Ns+4,1)                =   Qf*e;
 
 end
 

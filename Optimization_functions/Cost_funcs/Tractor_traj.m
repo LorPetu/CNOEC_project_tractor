@@ -47,16 +47,16 @@ acc     = u_in(2,:);
 plxf = zf(1,1);
 plyf = zf(2,1);
 
-time_s=linspace(0,Ts_s,Ns);
-time_p=linspace(0,Ts_p,Np);
+time_s=linspace(0,Tend,Ns);
+time_p=linspace(0,Tend,Np);
 
 figure(1);
 subplot(5,2,1:6),plot(plx,ply,plxf,plyf,"xr"),daspect([1,1,1]),grid on,axis([-10 10 -10 10])
 xlabel('x'), ylabel('y'),title('traiettoria')
 subplot(5,2,7),plot(time_s,ang),xlabel('Time (s)'),ylabel('psi'),
-subplot(5,2,8),plot(time_s,vel,time_s,maxvsat,time_s,minvsat),xlabel('Time (s)'),ylabel('velocità')
-subplot(5,2,9);plot(time_p,del,time_p,maxdeltasat,time_p,mindeltasat),xlabel('Time (s)'),ylabel('delta')
-subplot(5,2,10);plot(time_p,acc,time_p,maxasat,time_p,minasat),xlabel('Time (s)'),ylabel('acc');
+subplot(5,2,8),plot(time_s,vel*3.6,time_s,maxvsat*3.6,time_s,minvsat*3.6),xlabel('Time (s)'),ylabel('velocità [km/h]')
+subplot(5,2,9);plot(time_p,del,time_p,maxdeltasat,time_p,mindeltasat),xlabel('Time (s)'),ylabel('delta ')
+subplot(5,2,10);plot(time_p,acc,time_p,maxasat,time_p,minasat),xlabel('Time (s)'),ylabel('acc [m/s]');
 
 
 

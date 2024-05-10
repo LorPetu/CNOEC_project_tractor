@@ -1,15 +1,12 @@
 function [z_sim] = stati_finali(U,z0,zf,Np,Ns,parameters,Optimization_opt)
 
-Q = Optimization_opt.Q;         
-Qf = Optimization_opt.Qf;
-Qdot = Optimization_opt.Qdot;
-R = Optimization_opt.R;
+
 vsat = Optimization_opt.vsat;
 deltasat = Optimization_opt.deltasat;
 asat = Optimization_opt.asat;
-alpha = Optimization_opt.alpha;
-beta = Optimization_opt.beta;
-
+Ts_s=Optimization_opt.Ts_s;
+Ts_p=Optimization_opt.Ts_p;
+Tend=Optimization_opt.Tend; 
 %% Build vector of inputs
 
 u_in        =   [U(1:Np,1)';

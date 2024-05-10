@@ -42,8 +42,8 @@ zf      =       [xf;yf;psif;vf];
 %% Control problem parameters
 Ts_p          =   0.25;                       % Sampling time of comutation of input
 Ts_s         =   0.025;                        % Sampling time of the simulation
-Q           =   diag([1;1;1;1]*0);       % Tracking error weight
-Qf          =   diag([1;1;1;1]*1e10);       % Terminal weight
+Q           =   diag([1;1;1;1]*100);       % Tracking error weight
+Qf          =   diag([1;1;1;1]*1e15);       % Terminal weight
 Qdot        =   diag([0;0;1;1]*0);
 R           =   diag([1;1]*0.01);
 
@@ -55,7 +55,7 @@ vsat        =   10;                     % Input saturation
 asat        =   3;                      % Cart position limits
 deltasat    =   30*pi/180;
 
-alpha       =   1e2;               % Barrier function scaling
+alpha       =   1e3;               % Barrier function scaling
 beta        =   1e2;                 % Barrier function coefficient
 
 % Optimization_opt
@@ -77,21 +77,21 @@ Optimization_opt.Tend   = Tend;
 
  U0          = [ zeros(Np,1);       % Accelleration (m/s^2),
                 zeros(Np,1)];      
-%U0=Ustar
+
 
 %% Optimization parameters
 
 myoptions               =   myoptimset;
-myoptions.Hessmethod  	=	'GN';
+myoptions.Hessmethod  	=	'BFGS';
 myoptions.GN_funF       = @(U)tractor_cost_GN_grad_mod(U,z0,zf,Np,Ns,parameters,Optimization_opt);
-myoptions.gradmethod  	=	'FD';
-myoptions.graddx        =	2^-26;
+myoptions.gradmethod  	=	'CD';
+myoptions.graddx        =	2^-17;
 myoptions.tolgrad    	=	1e-10;
 myoptions.tolfun        =	1e-12;
-myoptions.ls_beta       =	0.5;
-myoptions.ls_c          =	.1;
-myoptions.ls_nitermax   =	20;
-myoptions.nitermax      =	200;
+myoptions.ls_beta       =	0.3;   %0.5
+myoptions.ls_c          =	.1;     %0.1
+myoptions.ls_nitermax   =	50;     %20
+myoptions.nitermax      =	500;
 myoptions.xsequence     =	'on';
 myoptions.outputfcn     =   @(U)Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimization_opt);
 
