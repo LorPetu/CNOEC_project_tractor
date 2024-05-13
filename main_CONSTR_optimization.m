@@ -39,7 +39,7 @@ vf      =       4/3.6;
 zf      =       [xf;yf;psif;vf];
 
 %% Control problem parameters
-Ts_p          =   0.25;                       % Sampling time of comutation of input
+Ts_p          =   0.5;                       % Sampling time of comutation of input
 Ts_s         =   0.05; 
 
 Tend        =   14;% NB sbagliavamo e mettevamo una                     % Time horizon
@@ -115,6 +115,7 @@ plx=zeros(N,1);
 ply=zeros(N,1);
 ang=zeros(N,1);
 vel=zeros(N,1);
+distN=zeros(N,1);
 
 for j=1:1:N
    plx(j,1)=zstar(1,j);
@@ -122,6 +123,12 @@ for j=1:1:N
    ang(j,1)=zstar(3,j);
    vel(j,1)=zstar(4,j);
 end
+
+for i=2:1:N
+       distN =sqrt((plx(i,1)-plx(i-1,1))^2 + (ply(i,1)-ply(i-1,1))^2);
+end
+
+sum(distN)
 
 Nu=length(Ustar)/2;
 
