@@ -359,12 +359,12 @@ elseif strcmp(myoptions.Hessmethod,'BFGS')    % BFGS method
             ineq_constr_min     =   min(hxk);
         end
 
-        if length(info.message) > 50
-            Cell = strsplit(info.message,'.');
-            QPviewinfo = Cell{1};
-        else
-            QPviewinfo = info.message;
-        end
+        % if length(info.message) > 50
+            %     C = strsplit(info.message,'.');
+            %     QPviewinfo = C{1};
+            % else
+            %     QPviewinfo = info.message;
+            % end
         
         % Feedback and output function
         if strcmp(myoptions.display,'Iter')

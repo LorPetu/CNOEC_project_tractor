@@ -14,7 +14,7 @@ z_sim      =   zeros(4,Ns);
 z_sim(:,1) =   z0;
 
 
-  for ind=2:Ns
+  for ind=2:Ns+1
     
         u       =  u_in(:,ceil((ind-1)*Ts_s/Ts_p));
         zdot    =  tractor_model (ztemp,u,parameters);
@@ -31,8 +31,8 @@ ang     = z_sim(3,:);
 vel     = z_sim(4,:);
 
 vsat = Optimization_opt.vsat;
-maxvsat = vsat*ones(Ns);
-minvsat = -vsat*ones(Ns);
+maxvsat = vsat*ones(Ns+1);
+minvsat = -vsat*ones(Ns+1);
 deltasat = Optimization_opt.deltasat;
 maxdeltasat = deltasat*ones(Np);
 mindeltasat = -deltasat*ones(Np);
@@ -47,7 +47,7 @@ acc     = u_in(2,:);
 plxf = zf(1,1);
 plyf = zf(2,1);
 
-time_s=linspace(0,Tend,Ns);
+time_s=linspace(0,Tend,Ns+1);
 time_p=linspace(0,Tend,Np);
 
 figure(1);
