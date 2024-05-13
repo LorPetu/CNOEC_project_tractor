@@ -62,7 +62,7 @@ Optimization_opt.Ns   = Ns;
 
 % U0              = [zeros(Np,1);     %delta
 %                    zeros(Np,1)];    %acceleration
- U0          = [[-1.2;zeros(ceil(Np/2)-1,1);0.5;zeros(floor(Np/2)-1,1)];      
+ U0          = [[-0.5;zeros(ceil(Np/2)-5,1);0.5;zeros(floor(Np/2)-1,1)];      
                 [0;zeros(ceil(Np/2)-1,1);-0.5;zeros(floor(Np/2)-1,1)]];      
 % %U0=Ustar
 
@@ -90,7 +90,7 @@ myoptions.graddx        =	2^-26;
 myoptions.GN_funF       = @(U)tractor_cost_GN_grad_constr(U,z0,zf,parameters,Optimization_opt);
 myoptions.tolgrad    	=	1e-15;
 myoptions.tolfun    	=	1e-10;
-myoptions.tolconstr     =   2e-6;
+myoptions.tolconstr     =   2e-2;
 myoptions.ls_beta       =	0.5;
 myoptions.ls_c          =	0.1;
 myoptions.ls_nitermax   =	100;

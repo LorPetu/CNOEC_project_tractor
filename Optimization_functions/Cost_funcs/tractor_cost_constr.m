@@ -28,22 +28,26 @@ for ind=2:Ns+1
     u               =  u_in(:,ceil((ind-1)*Ts_s/Ts_p));
     zdot               =   tractor_model(z_sim(:,ind-1),u,parameters);
     z_sim(:,ind)       =   z_sim(:,ind-1)+Ts_s*zdot;
-    e = z_sim(:, ind-1)-zf;
+    e = z_sim(1:2, ind)-z_sim(1:2, ind-1);
 
-    f= f + 1e-2*(e'*e); 
+    f= f +1e2*(e'*e); 
 end 
 
-delta_delta=u_in(1,2:end)-u_in(1,1:end-1);
+% delta_delta=u_in(1,2:end)-u_in(1,1:end-1);
 delta_acc=u_in(2,2:end)-u_in(2,1:end-1);
+% 
+f=f+1*(delta_acc*delta_acc');%(delta_delta*delta_delta')+1e3*(delta_acc*delta_acc');
 
-f=f+(delta_delta*delta_delta')+1e3*(delta_acc*delta_acc');
+
 %% Equality constraints g(x)
 g = [z_sim(:,end)-zf];
 
 %% Inequality constraints h(x)
 
-h = [(z_sim(4,2:end)+0*ones(1,Ns))';
-    (-z_sim(4,2:end)+vsat*ones(1,Ns))'];
+h = [(z_sim(4,2:end)+vsat*ones(1,Ns))'; %not zero, otherwhise constraint would not be satisfied
+    (-z_sim(4,2:end)+vsat*ones(1,Ns))';
+    (-z_sim(2,2:end)+6.0*ones(1,Ns))';
+    (z_sim(2,2:end)+0*ones(1,Ns))'];
 
 %% Stack cost and constraints
 v           =   [f;g;h];

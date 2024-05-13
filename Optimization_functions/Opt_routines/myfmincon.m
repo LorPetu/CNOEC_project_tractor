@@ -125,7 +125,9 @@ if strcmp(myoptions.Hessmethod,'GN')    % Constrained Gauss-Newton method
         
         % Compute search direction
         Hk                  =   2*(gradFxk*gradFxk')+myoptions.GN_sigma*eye(n);
-        [pk,~,~,~,LagMult]  =   quadprog(Hk,gradfxk,-gradhk',hxk,gradgk',-gxk,[],[],[],myoptions.QPoptions);
+        [pk,~,~,info,LagMult]  =   quadprog(Hk,gradfxk,-gradhk',hxk,gradgk',-gxk,[],[],[],myoptions.QPoptions);
+        % info.firstorderopt
+        % fprintf('From Quadprog iteration:  %s',info.message);
         lambda_tilde        =   -LagMult.eqlin;
         mu_tilde            =   LagMult.ineqlin;
         delta_lambda        =   lambda_tilde-lambdak;
@@ -271,7 +273,8 @@ elseif strcmp(myoptions.Hessmethod,'BFGS')    % BFGS method
             || max(eq_constr_max,-ineq_constr_min) > myoptions.tolconstr)
 
         % Compute new search direction
-        [pk,~,~,~,LagMult]  =   quadprog(Hk,gradfxk,-gradhk',hxk,gradgk',-gxk,[],[],[],myoptions.QPoptions);
+        [pk,~,~,info,LagMult]  =   quadprog(Hk,gradfxk,-gradhk',hxk,gradgk',-gxk,[],[],[],myoptions.QPoptions);
+        info.message
         lambda_tilde        =   -LagMult.eqlin;
         mu_tilde            =   LagMult.ineqlin;
         delta_lambda        =   lambda_tilde-lambdak;
