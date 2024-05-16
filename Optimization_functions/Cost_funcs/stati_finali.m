@@ -24,10 +24,13 @@ z_sim(:,1) =   z0;
 
   for ind=2:Ns+1
     
-        u       =  u_in(:,ceil((ind-1)*Ts_s/Ts_p));
-        zdot    =  tractor_model (ztemp,u,parameters);
-        ztemp    =  ztemp+Ts_s*zdot;
-        z_sim(:,ind)    =  ztemp;
-
+        if abs(z_sim(1,ind-1) -zf(1))>0.2 || abs(z_sim(2,ind-1) -zf(2))>0.2 ||abs(z_sim(3,ind-1) -zf(3))>0.2 || abs(z_sim(4,ind-1) -zf(4))>0.2
+        u               =  u_in(:,ceil((ind-1)*Ts_s/Ts_p));
+        zdot               =   tractor_model(z_sim(:,ind-1),u,parameters);
+        z_sim(:,ind)       =   z_sim(:,ind-1)+Ts_s*zdot;
+        
+        else
+        z_sim(:,ind)=zf;
+        end
   end
 end

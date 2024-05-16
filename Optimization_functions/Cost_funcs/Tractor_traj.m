@@ -15,12 +15,10 @@ z_sim(:,1) =   z0;
 
 
   for ind=2:Ns+1
-    
         u       =  u_in(:,ceil((ind-1)*Ts_s/Ts_p));
         zdot    =  tractor_model (ztemp,u,parameters);
         ztemp    =  ztemp+Ts_s*zdot;
         z_sim(:,ind)    =  ztemp;
-
   end
 
 %% Post-processing the results

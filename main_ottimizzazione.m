@@ -40,12 +40,12 @@ vf      =       4;
 zf      =       [xf;yf;psif;vf];
 
 %% Control problem parameters
-Ts_p          =   0.25;                       % Sampling time of comutation of input
+Ts_p          =   0.5;                       % Sampling time of comutation of input
 Ts_s         =   0.025;                        % Sampling time of the simulation
-Q           =   diag([1;1;1;1]*100);       % Tracking error weight
-Qf          =   diag([1;1;1;1]*1e15);       % Terminal weight
+Q           =   diag([1;1;1;1]*1e2);       % Tracking error weight
+Qf          =   diag([1;1;1;1]*1e20);       % Terminal weight
 Qdot        =   diag([0;0;1;1]*0);
-R           =   diag([1;1]*0.01);
+R           =   diag([1;1]*0);
 
 Tend        =   5;                         % Time horizon
 Ns          =   Tend/Ts_s;                    % Simulation steps
@@ -82,16 +82,17 @@ Optimization_opt.Tend   = Tend;
 %% Optimization parameters
 
 myoptions               =   myoptimset;
-myoptions.Hessmethod  	=	'BFGS';
+myoptions.Hessmethod  	=	'GN';
 myoptions.GN_funF       = @(U)tractor_cost_GN_grad_mod(U,z0,zf,Np,Ns,parameters,Optimization_opt);
 myoptions.gradmethod  	=	'CD';
-myoptions.graddx        =	2^-17;
+myoptions.graddx        =	2^-26;
 myoptions.tolgrad    	=	1e-10;
 myoptions.tolfun        =	1e-12;
-myoptions.ls_beta       =	0.3;   %0.5
+myoptions.ls_tkmax      =   1;
+myoptions.ls_beta       =	0.5;   %0.5
 myoptions.ls_c          =	.1;     %0.1
-myoptions.ls_nitermax   =	50;     %20
-myoptions.nitermax      =	500;
+myoptions.ls_nitermax   =	100;     %20
+myoptions.nitermax      =	100;
 myoptions.xsequence     =	'on';
 myoptions.outputfcn     =   @(U)Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimization_opt);
 

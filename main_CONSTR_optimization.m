@@ -40,9 +40,9 @@ zf      =       [xf;yf;psif;vf];
 
 %% Control problem parameters
 Ts_p          =   0.5;                       % Sampling time of comutation of input
-Ts_s         =   0.05; 
+Ts_s         =   0.02; 
 
-Tend        =   14;% NB sbagliavamo e mettevamo una                     % Time horizon
+Tend        =   10;% NB sbagliavamo e mettevamo una                     % Time horizon
 
 Ns          =   Tend/Ts_s;                    % Simulation steps
 Np          =   ceil(Tend/Ts_p);                  % Prediction steps
@@ -59,12 +59,12 @@ Optimization_opt.Tend   = Tend;
 Optimization_opt.Np   = Np;
 Optimization_opt.Ns   = Ns;
 %% Initial guess
-
-% U0              = [zeros(Np,1);     %delta
-%                    zeros(Np,1)];    %acceleration
- U0          = [[-1.2;zeros(ceil(Np/2)-1,1);0.5;zeros(floor(Np/2)-1,1)];      
-                [0;zeros(ceil(Np/2)-1,1);-0.5;zeros(floor(Np/2)-1,1)]];      
-% %U0=Ustar
+% 
+U0              = [zeros(Np,1);     %delta
+                   zeros(Np,1)];    %acceleration
+ % U0          = [[-1.2;zeros(ceil(Np/2)-1,1);0.5;zeros(floor(Np/2)-1,1)];      
+ %                [0;zeros(ceil(Np/2)-1,1);-0.5;zeros(floor(Np/2)-1,1)]];      
+% % %U0=Ustar
 
 %% Linear Constraints
 
@@ -79,22 +79,24 @@ d       =       [-deltasat*ones(Np,1);
 p = 4;
 
 % Number of inequality constraints
-q = 4*Ns;
+q = 2*Ns;
 
 %% Solution -  BFGS
 % Initialize solver options
 myoptions               =   myoptimset_const;
 myoptions.Hessmethod  	=	'BFGS';
 myoptions.gradmethod  	=	'CD';
-myoptions.graddx        =	2^-26;
+myoptions.graddx        =	2^-17;
 myoptions.GN_funF       = @(U)tractor_cost_GN_grad_constr(U,z0,zf,parameters,Optimization_opt);
-myoptions.tolgrad    	=	1e-15;
-myoptions.tolfun    	=	1e-10;
-myoptions.tolconstr     =   2e-6;
-myoptions.ls_beta       =	0.5;
+myoptions.tolgrad    	=	1e-6;
+myoptions.tolfun    	=	1e-6;
+myoptions.tolconstr     =   1e-6;
+myoptions.tolx          =	1e-4;
+myoptions.ls_tkmax      =	1;
+myoptions.ls_beta       =	0.8;
 myoptions.ls_c          =	0.1;
-myoptions.ls_nitermax   =	100;
-myoptions.nitermax      =	70;
+myoptions.ls_nitermax   =	200;
+myoptions.nitermax      =	185;
 myoptions.xsequence     =	'on';
 myoptions.outputfcn     =    @(U)Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimization_opt);
 
@@ -108,7 +110,11 @@ tempo_trascorso = toc;
 %% calcolo stati finali
 [zstar] = stati_finali(Ustar,z0,zf,Np,Ns,parameters,Optimization_opt);
 
-N=length(zstar);
+
+colonnediverse = all(zstar ~= zf, 1);
+zstar_new = zstar(:, colonnediverse);
+
+N=length(zstar_new);
 
 
 plx=zeros(N,1);
@@ -118,10 +124,10 @@ vel=zeros(N,1);
 distN=zeros(N,1);
 
 for j=1:1:N
-   plx(j,1)=zstar(1,j);
-   ply(j,1)=zstar(2,j);
-   ang(j,1)=zstar(3,j);
-   vel(j,1)=zstar(4,j);
+   plx(j,1)=zstar_new(1,j);
+   ply(j,1)=zstar_new(2,j);
+   ang(j,1)=zstar_new(3,j);
+   vel(j,1)=zstar_new(4,j);
 end
 
 for i=2:1:N
@@ -136,12 +142,14 @@ for j=1:1:Nu
    del(j,1)=Ustar(j,1);
    acc(j,1)=Ustar(Nu+j,1);
 end
+time_s=0:Ts_s:(N-1)*Ts_s;
+time_p=0:Ts_p:(Nu-1)*Ts_p;
 
 figure(2)
-subplot(4,1,1),plot(0:Ts_s:(N-1)*Ts_s,ang),xlabel('Time (s)'),ylabel('psi'),grid on
-subplot(4,1,2),plot(0:Ts_s:(N-1)*Ts_s,vel),xlabel('Time (s)'),ylabel('velocità'),grid on
-subplot(4,1,3);plot(0:Ts_p:(Nu-1)*Ts_p,del),xlabel('Time (s)'),ylabel('delta'),grid on
-subplot(4,1,4);plot(0:Ts_p:(Nu-1)*Ts_p,acc),xlabel('Time (s)'),ylabel('acc'),grid on;
+subplot(4,1,1),plot(time_s,ang),xlabel('Time (s)'),ylabel('psi'),grid on
+subplot(4,1,2),plot(time_s,vel),xlabel('Time (s)'),ylabel('velocità'),grid on
+subplot(4,1,3);plot(time_p,del),xlabel('Time (s)'),ylabel('delta'),grid on
+subplot(4,1,4);plot(time_p,acc),xlabel('Time (s)'),ylabel('acc'),grid on;
 
 figure(3)
 plot(plx,ply,'o');hold on;
@@ -157,3 +165,8 @@ fprintf('   vfinale    vtarget     error\n %f    %f    %f\n\n',vel(N,1),vf,abs(v
 % Visualizza il tempo trascorso
 disp(['Tempo trascorso: ', num2str(tempo_trascorso), ' secondi']);
 
+%%
+
+ disp(length(zstar_new));
+
+ disp(['raggiunge target in ', num2str(length(zstar_new)*Ts_s), ' secondi'] )

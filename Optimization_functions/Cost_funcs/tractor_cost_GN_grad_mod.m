@@ -33,16 +33,18 @@ F           =   [zeros(4*Ns,1);
                 zeros(Ns,1);          %alpha*exp(-beta*(asat+U(2,1)));
                 zeros(Ns,1);
                 zeros(Ns,1);
-                zeros(4,1);];
+                zeros(4,1);
+                0];
 
-
+t=0;
 
     for ind=2:Ns+1
+
+        if abs(ztemp(1)-zf(1))>0.1 || abs( ztemp(2)-zf(2))>0.1
             u               =  u_in(:,ceil((ind-1)*Ts_s/Ts_p));
             zdot    =  tractor_model (ztemp,u,parameters);
             ztemp    =  ztemp+Ts_s*zdot;
             e        =  zf - ztemp;
-        
        % Update the cost function 
         F((ind-2)*4+1:(ind-1)*4,1)          =   Q*[e(:,1)];
         F((ind-2)*4+4*Ns+1:(ind-1)*4+4*Ns,1)          =   Qdot*zdot;
@@ -55,12 +57,18 @@ F           =   [zeros(4*Ns,1);
         F(8*Ns+2*Ns+5*Ns+(ind-1),1)                    =   alpha*exp(-beta*(asat-u(2)));
         F(8*Ns+2*Ns+6*Ns+(ind-1),1)                    =   0;%alpha*exp(-beta*(0+ztemp(1,1)));
         F(8*Ns+2*Ns+7*Ns+(ind-1),1)                    =   0;%alpha*exp(-beta*(6-ztemp(2,1)));
-
+        t=t+1;
+        end
     end 
-a=(ind-1)*Ts_s;
 % Update the terminal cost and its Jacobian
-F(8*Ns+2*Ns+8*Ns+1:8*Ns+2*Ns+8*Ns+4,1)                =   Qf*e;
+F(8*Ns+2*Ns+8*Ns+1:8*Ns+2*Ns+8*Ns+4,1)                =  Qf*e;
 
+if t<200
+F(8*Ns+2*Ns+8*Ns+1:8*Ns+2*Ns+8*Ns+4+1,1)=1e-2*t;
+end
+disp(ztemp)
+
+disp( t)
 end
 
 
