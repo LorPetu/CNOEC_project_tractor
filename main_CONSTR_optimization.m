@@ -13,7 +13,7 @@ addpath(genpath('Optimization_functions/'));
 %load('Ustar.mat');
 %% Model Parameters
 
-Lt        =   1.85;                 % Wheelbase (m)
+Lt        =   1.85;                  % Wheelbase (m)
 Hti       =   pi/2;                 % Initial heading of the tractor (rad)
 Htf       =   pi/2;                 % Final heading of the tractor (rad)
 d         =   5.0;                  % Row width (m)
@@ -31,7 +31,7 @@ vt        =      4/3.6;                     % body x velocity (m/s)
 z0=[xt;yt;psit;vt];
 
 %% final state
-xf      =       3;
+xf      =       4; 
 yf      =       0;
 psif    =       -pi/2;
 vf      =       4/3.6;
@@ -39,8 +39,8 @@ vf      =       4/3.6;
 zf      =       [xf;yf;psif;vf];
 
 %% Control problem parameters
-Ts_p          =   0.5;                       % Sampling time of comutation of input
-Ts_s         =   0.05; 
+Ts_p          =   0.3;                       % Sampling time of comutation of input
+Ts_s         =   0.2; 
 
 Tend        =   14;% NB sbagliavamo e mettevamo una                     % Time horizon
 
@@ -75,6 +75,20 @@ d       =       [-deltasat*ones(Np,1);
                  -deltasat*ones(Np,1);
                  -asat*ones(Np,1);];
 
+%% Parametrized Constraint
+% boundaries are expressed as y=mx+q
+% Upper bound y<mx+q
+constr_param.m(1)   =   0.2; % zero for standard case
+constr_param.q(1)   =   8;
+
+% Lower bound y<mx+q
+constr_param.m(2)   =   0.2; % zero for standard case
+constr_param.q(2)   =   0; 
+
+
+zf(2) = constr_param.m(2)*zf(1) + constr_param.q(2); 
+constr_param.zf = zf;
+
 % Number of equality constraints
 p = 4;
 
@@ -88,13 +102,13 @@ myoptions.Hessmethod  	=	'BFGS';
 myoptions.gradmethod  	=	'CD';
 myoptions.graddx        =	2^-26;
 myoptions.GN_funF       = @(U)tractor_cost_GN_grad_constr(U,z0,zf,parameters,Optimization_opt);
-myoptions.tolgrad    	=	1e-15;
-myoptions.tolfun    	=	1e-10;
-myoptions.tolconstr     =   2e-6;
-myoptions.ls_beta       =	0.5;
-myoptions.ls_c          =	0.1;
+myoptions.tolgrad    	=	1e-12;
+myoptions.tolfun    	=	1e-8;
+myoptions.tolconstr     =   4e-2;
+myoptions.ls_beta       =	0.8;
+myoptions.ls_c          =	0.1; 
 myoptions.ls_nitermax   =	100;
-myoptions.nitermax      =	70;
+myoptions.nitermax      =	200;
 myoptions.xsequence     =	'on';
 myoptions.outputfcn     =    @(U)Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimization_opt);
 
@@ -102,7 +116,7 @@ myoptions.outputfcn     =    @(U)Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimizat
 
 tic ;
 
-[Ustar,fxstar,niter,exitflag,xsequence] = myfmincon(@(U)tractor_cost_constr(U,z0,zf,parameters,Optimization_opt),U0,[],[],C,d,p,q,myoptions);
+[Ustar,fxstar,niter,exitflag,xsequence] = myfmincon(@(U)tractor_cost_constr(U,z0,parameters,Optimization_opt,constr_param),U0,[],[],C,d,p,q,myoptions);
 
 tempo_trascorso = toc;
 %% calcolo stati finali
@@ -145,7 +159,9 @@ subplot(4,1,4);plot(0:Ts_p:(Nu-1)*Ts_p,acc),xlabel('Time (s)'),ylabel('acc'),gri
 
 figure(3)
 plot(plx,ply,'o');hold on;
-plot(xf,yf,"xr",'MarkerSize', 10, 'LineWidth', 2);daspect([1 1 1]);xlabel('x'); ylabel('y');title('traiettoria'),grid on
+plot(plx,constr_param.m(2)*plx + constr_param.q(2),"red"); hold on;
+plot(plx,constr_param.m(1)*plx + constr_param.q(1),"red"); hold on;
+plot(zf(1),zf(2),"xr",'MarkerSize', 10, 'LineWidth', 2);daspect([1 1 1]);xlabel('x'); ylabel('y');title('traiettoria'),grid on
 
 fprintf('   xfinale    xtarget     error\n %f    %f    %f\n',plx(N,1),xf,abs(plx(end,1)-xf));
 fprintf('   yfinale    ytarget     error\n %f    %f    %f\n',ply(N,1),yf,abs(ply(end,1)-yf));

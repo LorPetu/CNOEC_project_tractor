@@ -1,4 +1,4 @@
-function v = tractor_cost_constr(U,z0,zf,parameters,Optimization_opt)
+function v = tractor_cost_constr(U,z0,parameters,Optimization_opt, constr_param)
 % Function that computes the trajectory of the tractor exiting from a row
 % and the constraint
 
@@ -10,6 +10,14 @@ Ts_p=Optimization_opt.Ts_p;
 Tend=Optimization_opt.Tend;  
 Ns = Optimization_opt.Ns;
 Np = Optimization_opt.Np;
+
+m_up= constr_param.m(1);
+m_down= constr_param.m(2);
+q_up = constr_param.q(1);
+q_down = constr_param.q(2);
+
+zf = constr_param.zf;
+
 
 
 
@@ -30,13 +38,13 @@ for ind=2:Ns+1
     z_sim(:,ind)       =   z_sim(:,ind-1)+Ts_s*zdot;
     e = z_sim(1:2, ind)-z_sim(1:2, ind-1);
 
-    f= f +1e2*(e'*e); 
+    f= f +1*(e'*e); 
 end 
 
 % delta_delta=u_in(1,2:end)-u_in(1,1:end-1);
 delta_acc=u_in(2,2:end)-u_in(2,1:end-1);
 % 
-f=f+1*(delta_acc*delta_acc');%(delta_delta*delta_delta')+1e3*(delta_acc*delta_acc');
+f=f+1e2*(delta_acc*delta_acc');%(delta_delta*delta_delta')+1e3*(delta_acc*delta_acc');
 
 
 %% Equality constraints g(x)
@@ -46,8 +54,10 @@ g = [z_sim(:,end)-zf];
 
 h = [(z_sim(4,2:end)+vsat*ones(1,Ns))'; %not zero, otherwhise constraint would not be satisfied
     (-z_sim(4,2:end)+vsat*ones(1,Ns))';
-    (-z_sim(2,2:end)+6.0*ones(1,Ns))';
-    (z_sim(2,2:end)+0*ones(1,Ns))'];
+    % Parametrized constrained
+    (-z_sim(2,2:end)+m_up*z_sim(1,2:end)+q_up*ones(1,Ns))'; % -y + m*x + q > 0 y < m*x+q
+    (z_sim(2,2:end)-m_down*z_sim(1,2:end)-q_down*ones(1,Ns))']; % y - m*x - q > 0
+
 
 %% Stack cost and constraints
 v           =   [f;g;h];
