@@ -1,5 +1,5 @@
-%% Initialization
-clear all
+function output = gridding_opt_routines(m_in,q_in) 
+
 close all
 clc
 
@@ -16,7 +16,7 @@ addpath(genpath('Optimization_functions/'));
 Lt        =   1.85;                  % Wheelbase (m)
 Hti       =   pi/2;                 % Initial heading of the tractor (rad)
 Htf       =   pi/2;                 % Final heading of the tractor (rad)
-d         =   4.0;                  % Row width (m)
+d         =   5.0;                  % Row width (m)
 Li        =   2.5;                  % Wheelbase of implements
 
 
@@ -31,7 +31,7 @@ vt        =      4/3.6;                     % body x velocity (m/s)
 z0=[xt;yt;psit;vt];
 
 %% final state
-xf      =       xt+d; 
+xf      =       5; 
 yf      =       0;
 psif    =       -pi/2;
 vf      =       4/3.6;
@@ -76,14 +76,15 @@ d       =       [-deltasat*ones(Np,1);
                  -deltasat*ones(Np,1);
                  -asat*ones(Np,1);];
 
+
 %% Parametrized Constraint
 % boundaries are expressed as y=mx+q
 % Upper bound y<mx+q
-constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   = 5.5;
+constr_param.m(1)   =  m_in; % zero for standard case
+constr_param.q(1)   =  q_in;
 
 % Lower bound y<mx+q
-constr_param.m(2)   =   0; % zero for standard case
+constr_param.m(2)   =   m_in; % zero for standard case
 constr_param.q(2)   =   0; 
 
 
@@ -169,7 +170,7 @@ plot(plx,constr_param.m(1)*plx + constr_param.q(1),"red"); hold on;
 plot(zf(1),zf(2),"xr",'MarkerSize', 10, 'LineWidth', 2);daspect([1 1 1]);xlabel('x'); ylabel('y');title('traiettoria'),grid on
 
 % Annotation for parameters 
-ann1str = sprintf('Opt param:\nLINE SEARCH\n tkmax = %.1f \n beta = %.1f \n c = %.2f ',myoptions.ls_tkmax,myoptions.ls_beta, myoptions.ls_c); % annotation text
+ann1str = sprintf('Opt param:\n T_{end} = %.f \nLINE SEARCH\n tkmax = %.1f \n beta = %.1f \n c = %.1f ',Tend,myoptions.ls_tkmax,myoptions.ls_beta, myoptions.ls_c); % annotation text
 ann1pos = [0.018 0.71 0.19 0.22]; % annotation position in figure coordinates
 ha1 = annotation('textbox',ann1pos,'string',ann1str);
 ha1.HorizontalAlignment = 'left';
@@ -182,8 +183,8 @@ ha2.HorizontalAlignment = 'left';
 ha2.EdgeColor = 'red';
 
 %% Save figures
-m_string = replace(sprintf('m%.1f__q%.2f',constr_param.m(1),constr_param.q(1)),'.','');
-figname = sprintf('%.f___%s__q%.f ',exitflag,m_string);
+m_string = replace(sprintf('m%.1f',constr_param.m(1)),'.','');
+figname = sprintf('%.f___%s__q%.f ',exitflag,m_string,constr_param.q(1));
 saveas(figure(3),[pwd '/Constr_sat01/' figname]);
 saveas(figure(2),[pwd '/Constr_sat01/' figname '_states']);
 
@@ -193,7 +194,7 @@ fprintf('   psifinale  psitarget   error\n %f    %f    %f\n',ang(N,1),psif,abs(a
 fprintf('   vfinale    vtarget     error\n %f    %f    %f\n\n',vel(N,1),vf,abs(vel(end,1)-vf));
 
 
-
 % Visualizza il tempo trascorso
 disp(['Tempo trascorso: ', num2str(tempo_trascorso), ' secondi']);
 
+end
