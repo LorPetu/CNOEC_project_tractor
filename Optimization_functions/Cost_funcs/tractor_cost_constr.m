@@ -44,7 +44,7 @@ end
 % delta_delta=u_in(1,2:end)-u_in(1,1:end-1);
 delta_acc=u_in(2,2:end)-u_in(2,1:end-1);
 % 
-f=f+1e2*(delta_acc*delta_acc');%(delta_delta*delta_delta')+1e3*(delta_acc*delta_acc');
+f=f+1e2*(delta_acc*delta_acc') ;%(delta_delta*delta_delta')+1e3*(delta_acc*delta_acc');
 
 
 %% Equality constraints g(x)
