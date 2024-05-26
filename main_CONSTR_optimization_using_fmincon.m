@@ -148,7 +148,7 @@ options = optimoptions(@fmincon,...
     'ConstraintTolerance', 2e-3,...  % "EnableFeasibilityMode",false,...   
     'MaxFunctionEvaluations',10e5, ...
     'MaxIterations',500,...
-    'PlotFcn', @plotfun_tractor_traj,...
+    'PlotFcn', {@plotfun_tractor_traj,@optimplotfval},...
     'Display','iter-detailed');
 
 %% Run solver
@@ -167,7 +167,6 @@ tempo_trascorso = toc;
 
 N=length(zstar);
 
-close all
 plx=zeros(N,1);
 ply=zeros(N,1);
 ang=zeros(N,1);
@@ -202,7 +201,7 @@ subplot(4,1,4);plot(0:Ts_p:(Nu-1)*Ts_p,acc),xlabel('Time (s)'),ylabel('acc'),gri
 
 
 figure(3)
-plot(plx,ply,'o');hold on;
+plot(plx,ply,'o');hold on;axis([-5 10 -2 12])
 plot(plx,constr_param.m(2)*plx + constr_param.q(2),"red"); hold on;
 plot(plx,constr_param.m(1)*plx + constr_param.q(1),"red"); hold on;
 plot(zf(1),zf(2),"xr",'MarkerSize', 10, 'LineWidth', 2);daspect([1 1 1]);xlabel('x'); ylabel('y');title('traiettoria'),grid on

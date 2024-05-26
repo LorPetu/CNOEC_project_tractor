@@ -1,5 +1,5 @@
 function stop = plotfun_tractor_traj(U,optimValues,state)
-persistent Ts_s Ts_p Tend Ns Np z0 parameters % Retain these values throughout the optimization
+persistent Ts_s Ts_p Tend Ns Np z0 ztemp parameters % Retain these values throughout the optimization
 stop = false;
 switch state
     case "init"
@@ -29,11 +29,11 @@ switch state
         
         z0=[xt;yt;psit;vt];
         
-       
+        ztemp=z0;
 
     case "iter"
         %% Build vector of inputs
-        ztemp=z0;
+        
         u_in        =   [   U(1:Np,1)';
                             U(Np+1:end,1)'];
 
@@ -74,7 +74,7 @@ switch state
         % time_s=linspace(0,Tend,Ns+1);
         % time_p=linspace(0,Tend,Np);
 
-        plot(z_sim(1,:),z_sim(2,:)),daspect([1,1,1]),grid on,axis([-5 10 -2 12])
+        plot(z_sim(1,:),z_sim(2,:)),daspect([1,1,1]),grid on,%axis([-10 10 -10 10])
         xlabel('x'), ylabel('y'),title(sprintf('Trajectory at k = %d',optimValues.iteration))
 
 
