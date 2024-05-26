@@ -59,28 +59,28 @@ Optimization_opt.Tend   = Tend;
 Optimization_opt.Np   = Np;
 Optimization_opt.Ns   = Ns;
 %% Initial guess
-% U0 = load('best_initial_cond.mat').Ustar;
+U0 = load('best_initial_cond.mat').Ustar;
 % U0          = best_initial_cond;
 % U0              = [zeros(Np,1);     %delta
 %                    zeros(Np,1)];    %acceleration
- U0          = [[-1;zeros(ceil(Np/2)-1,1);0.5;zeros(floor(Np/2)-1,1)];      
-                [0;zeros(ceil(Np/2)-1,1);-0.5;zeros(floor(Np/2)-1,1)]];      
+ % U0          = [[-1;zeros(ceil(Np/2)-1,1);0.5;zeros(floor(Np/2)-1,1)];      
+ %                [0;zeros(ceil(Np/2)-1,1);-0.5;zeros(floor(Np/2)-1,1)]];      
 % % %U0=Ustar
 
 %% Linear Constraints
-
-C       =       [-eye(2*Np)
-                eye(2*Np)];
-d       =       [-deltasat*ones(Np,1);
-                 -asat*ones(Np,1);
-                 -deltasat*ones(Np,1);
+% 
+% C       =       [-eye(2*Np)
+%                 eye(2*Np)];
+lb       =       [-deltasat*ones(Np,1);
                  -asat*ones(Np,1);];
+ub        =        [deltasat*ones(Np,1);
+                 asat*ones(Np,1);];
 
 %% Parametrized Constraint
 % boundaries are expressed as y=mx+q
 % Upper bound y<mx+q
 constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   = 5.5;
+constr_param.q(1)   = 10;
 
 % Lower bound y<mx+q
 constr_param.m(2)   =   0; % zero for standard case
@@ -114,12 +114,50 @@ myoptions.nitermax      =	200;
 myoptions.xsequence     =	'on';
 myoptions.outputfcn     =    @(U)Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimization_opt);
 
+%% Matlab fmincon options
+
+   % Default properties:
+   %                  Algorithm: 'interior-point'
+   %         BarrierParamUpdate: 'monotone'
+   %        ConstraintTolerance: 1.0000e-06
+   %                    Display: 'final'
+   %      EnableFeasibilityMode: 0
+   %   FiniteDifferenceStepSize: 'sqrt(eps)'
+   %       FiniteDifferenceType: 'forward'
+   %       HessianApproximation: 'bfgs'
+   %                 HessianFcn: []
+   %         HessianMultiplyFcn: []
+   %                HonorBounds: 1
+   %     MaxFunctionEvaluations: 3000
+   %              MaxIterations: 1000
+   %             ObjectiveLimit: -1.0000e+20
+   %        OptimalityTolerance: 1.0000e-06
+   %                  OutputFcn: []
+   %                    PlotFcn: []
+   %               ScaleProblem: 0
+   %  SpecifyConstraintGradient: 0
+   %   SpecifyObjectiveGradient: 0
+   %              StepTolerance: 1.0000e-10
+   %        SubproblemAlgorithm: 'factorization'
+   %                   TypicalX: 'ones(numberOfVariables,1)'
+   %                UseParallel: 0
+
+options = optimoptions(@fmincon,...
+    'Algorithm','interior-point',...
+    'FiniteDifferenceType','central',...
+    'ConstraintTolerance', 2e-3,...  % "EnableFeasibilityMode",false,...   
+    'MaxFunctionEvaluations',10e5, ...
+    'MaxIterations',500,...
+    'PlotFcn', @plotfun_tractor_traj,...
+    'Display','iter-detailed');
+
 %% Run solver
 
 tic ;
-@(U)deal(tractor_cost_constr(U, z0, parameters, Optimization_opt, constr_param)[1]);
-% [Ustar,fxstar,niter,exitflag,xsequence] = myfmincon(@(U)tractor_cost_constr(U,z0,parameters,Optimization_opt,constr_param),U0,[],[],C,d,p,q,myoptions);
-[x,fval,exitflag,output] = @(U)nested_fmincon(U,z0,parameters,Optimization_opt,constr_param,U0,C,d,[],[],[],[]);
+[Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param)...
+                                                    ,U0,[],[],[],[],lb,ub,...
+                                                    @(U)constr_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param),options);
+% [Ustar,fval,exitflag,output] = nested_fmincon(z0,parameters,Optimization_opt,constr_param,U0,C,d,[],[],[],[],options);
 
 tempo_trascorso = toc;
 
@@ -147,7 +185,7 @@ for i=2:1:N
        distN =sqrt((plx(i,1)-plx(i-1,1))^2 + (ply(i,1)-ply(i-1,1))^2);
 end
 
-sum(distN)
+sum(distN);
 
 Nu=length(Ustar)/2;
 
@@ -169,29 +207,29 @@ plot(plx,constr_param.m(2)*plx + constr_param.q(2),"red"); hold on;
 plot(plx,constr_param.m(1)*plx + constr_param.q(1),"red"); hold on;
 plot(zf(1),zf(2),"xr",'MarkerSize', 10, 'LineWidth', 2);daspect([1 1 1]);xlabel('x'); ylabel('y');title('traiettoria'),grid on
 
-% Annotation for parameters 
-ann1str = sprintf('Opt param:\nLINE SEARCH\n tkmax = %.1f \n beta = %.1f \n c = %.2f ',myoptions.ls_tkmax,myoptions.ls_beta, myoptions.ls_c); % annotation text
-ann1pos = [0.018 0.71 0.19 0.22]; % annotation position in figure coordinates
-ha1 = annotation('textbox',ann1pos,'string',ann1str);
-ha1.HorizontalAlignment = 'left';
-
-%Annotation for constraints
-ann2str = sprintf('Constraints:\n Y < %.1f*X + %.f \n Y > %.1f*X + %.f ',constr_param.m(1),constr_param.q(1),constr_param.m(2),constr_param.q(2)); % annotation text
-ann2pos = [0.02 0.2 0.1 0.1]; % annotation position in figure coordinates
-ha2 = annotation('textbox',ann2pos,'string',ann2str);
-ha2.HorizontalAlignment = 'left';
-ha2.EdgeColor = 'red';
-
-%% Save figures
-m_string = replace(sprintf('m%.1f__q%.2f',constr_param.m(1),constr_param.q(1)),'.','');
-figname = sprintf('%.f___%s__q%.f ',exitflag,m_string);
-saveas(figure(3),[pwd '/Constr_sat01/' figname]);
-saveas(figure(2),[pwd '/Constr_sat01/' figname '_states']);
-
-fprintf('   xfinale    xtarget     error\n %f    %f    %f\n',plx(N,1),zf(1),abs(plx(end,1)-zf(1)));
-fprintf('   yfinale    ytarget     error\n %f    %f    %f\n',ply(N,1),zf(2),abs(ply(end,1)-zf(2)));
-fprintf('   psifinale  psitarget   error\n %f    %f    %f\n',ang(N,1),psif,abs(ang(end,1)-psif));
-fprintf('   vfinale    vtarget     error\n %f    %f    %f\n\n',vel(N,1),vf,abs(vel(end,1)-vf));
+% % Annotation for parameters 
+% ann1str = sprintf('Opt param:\nLINE SEARCH\n tkmax = %.1f \n beta = %.1f \n c = %.2f ',myoptions.ls_tkmax,myoptions.ls_beta, myoptions.ls_c); % annotation text
+% ann1pos = [0.018 0.71 0.19 0.22]; % annotation position in figure coordinates
+% ha1 = annotation('textbox',ann1pos,'string',ann1str);
+% ha1.HorizontalAlignment = 'left';
+% 
+% %Annotation for constraints
+% ann2str = sprintf('Constraints:\n Y < %.1f*X + %.f \n Y > %.1f*X + %.f ',constr_param.m(1),constr_param.q(1),constr_param.m(2),constr_param.q(2)); % annotation text
+% ann2pos = [0.02 0.2 0.1 0.1]; % annotation position in figure coordinates
+% ha2 = annotation('textbox',ann2pos,'string',ann2str);
+% ha2.HorizontalAlignment = 'left';
+% ha2.EdgeColor = 'red';
+% 
+% %% Save figures
+% m_string = replace(sprintf('m%.1f__q%.2f',constr_param.m(1),constr_param.q(1)),'.','');
+% figname = sprintf('%.f___%s__q%.f ',exitflag,m_string);
+% saveas(figure(3),[pwd '/Constr_sat01/' figname]);
+% saveas(figure(2),[pwd '/Constr_sat01/' figname '_states']);
+% 
+% fprintf('   xfinale    xtarget     error\n %f    %f    %f\n',plx(N,1),zf(1),abs(plx(end,1)-zf(1)));
+% fprintf('   yfinale    ytarget     error\n %f    %f    %f\n',ply(N,1),zf(2),abs(ply(end,1)-zf(2)));
+% fprintf('   psifinale  psitarget   error\n %f    %f    %f\n',ang(N,1),psif,abs(ang(end,1)-psif));
+% fprintf('   vfinale    vtarget     error\n %f    %f    %f\n\n',vel(N,1),vf,abs(vel(end,1)-vf));
 
 
 
