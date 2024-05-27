@@ -59,12 +59,12 @@ Optimization_opt.Tend   = Tend;
 Optimization_opt.Np   = Np;
 Optimization_opt.Ns   = Ns;
 %% Initial guess
-U0 = load('best_initial_cond.mat').Ustar;
+% U0 = load('best_initial_cond.mat').Ustar;
 % U0          = best_initial_cond;
 % U0              = [zeros(Np,1);     %delta
 %                    zeros(Np,1)];    %acceleration
- % U0          = [[-1;zeros(ceil(Np/2)-1,1);0.5;zeros(floor(Np/2)-1,1)];      
- %                [0;zeros(ceil(Np/2)-1,1);-0.5;zeros(floor(Np/2)-1,1)]];      
+ U0          = [[-1;zeros(ceil(Np/2)-1,1);0.5;zeros(floor(Np/2)-1,1)];      
+                [0;zeros(ceil(Np/2)-1,1);-0.5;zeros(floor(Np/2)-1,1)]];      
 % % %U0=Ustar
 
 %% Linear Constraints
@@ -145,10 +145,11 @@ myoptions.outputfcn     =    @(U)Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimizat
 options = optimoptions(@fmincon,...
     'Algorithm','interior-point',...
     'FiniteDifferenceType','central',...
-    'ConstraintTolerance', 2e-3,...  % "EnableFeasibilityMode",false,...   
+    'ConstraintTolerance', 2e-3,...  
+    "EnableFeasibilityMode",false,...   
     'MaxFunctionEvaluations',10e5, ...
     'MaxIterations',500,...
-    'PlotFcn', {@plotfun_tractor_traj,@optimplotfval},...
+    'PlotFcn', {@plotfun_tractor_traj,@optimplotfval},... %,@optimplotfval
     'Display','iter-detailed');
 
 %% Run solver

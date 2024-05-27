@@ -1,5 +1,5 @@
-function stop = plotfun_tractor_traj(U,optimValues,state)
-persistent Ts_s Ts_p Tend Ns Np z0 parameters vsat asat deltasat % Retain these values throughout the optimization
+function stop = plotfun_tractor_traj_fval(U,optimValues,state)
+persistent Ts_s Ts_p Tend Ns Np z0 parameters vsat asat deltasat thePlot % Retain these values throughout the optimization
 stop = false;
 switch state
     case "init"
@@ -36,6 +36,14 @@ switch state
        
         
     case "iter"
+        
+        if optimValues.iteration == 0
+            subplot(4,4,13:16); 
+            thePlot = matlab.internal.optimfun.plotfcns.Factory.optimplotfval(optimValues);
+        else
+            subplot(4,4,13:16), thePlot.update(optimValues);
+        end
+
         %% Build vector of inputs
         ztemp=z0;
         u_in        =   [   U(1:Np,1)';
@@ -76,13 +84,14 @@ switch state
         
         time_s=linspace(0,Tend,Ns+1);
         time_p=linspace(0,Tend,Np);
-        plot(z_sim(1,:),z_sim(2,:)),daspect([1,1,1]),grid on,axis([-5 10 -2 12])
+        subplot(4,4,[1,2,5,6,9,10]),plot(z_sim(1,:),z_sim(2,:)),daspect([1,1,1]),grid on,axis([-5 10 -2 12])
         xlabel('x'), ylabel('y'),title(sprintf('Trajectory at k = %d',optimValues.iteration))
         
-        % plot(time_s,ang),xlabel('Time (s)'),ylabel('psi'),
-        % plot(time_s,vel*3.6,time_s,maxvsat*3.6,time_s,minvsat*3.6),xlabel('Time (s)'),ylabel('velocità [km/h]')
-        % plot(time_p,del,time_p,maxdeltasat,time_p,mindeltasat),xlabel('Time (s)'),ylabel('delta ')
-        % plot(time_p,acc,time_p,maxasat,time_p,minasat),xlabel('Time (s)'),ylabel('acc [m/s]');
+        subplot(4,4,3:4),plot(time_s,ang),xlabel('Time (s)'),ylabel('psi'),
+        subplot(4,4,7:8),plot(time_s,vel*3.6,time_s,maxvsat*3.6,time_s,minvsat*3.6),xlabel('Time (s)'),ylabel('velocità [km/h]')
+        subplot(4,4,11:12);plot(time_p,del,time_p,maxdeltasat,time_p,mindeltasat),xlabel('Time (s)'),ylabel('delta ')
+        %subplot(4,4,15:16);plot(time_p,acc,time_p,maxasat,time_p,minasat),xlabel('Time (s)'),ylabel('acc [m/s]');
+        
 
 
 

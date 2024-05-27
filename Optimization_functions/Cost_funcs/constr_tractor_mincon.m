@@ -47,7 +47,7 @@ g = [z_sim(:,end)-zf];
 
 %fmincon has the constraint structure c(x)<0, while myfmincon >0
 
-h = [(-z_sim(4,2:end)-vsat*ones(1,Ns))'; %not zero, otherwhise constraint would not be satisfied
+h = [(-z_sim(4,2:end)+vsat*ones(1,Ns))'; %not zero, otherwhise constraint would not be satisfied
     (+z_sim(4,2:end)-vsat*ones(1,Ns))';
     % Parametrized constrained
     (z_sim(2,2:end)+m_up*z_sim(1,2:end)-q_up*ones(1,Ns))'; % -y + m*x + q < 0 y < m*x+q
