@@ -71,8 +71,8 @@ U0              = [-0.5*ones(Np,1);     %delta
 
 %% Linear Constraints
 
-C       =       [-eye(2*Np), zeros(2*Np,s_number); zeros(s_number,2*Np), zeros(s_number,s_number);
-                eye(2*Np), zeros(2*Np,s_number); zeros(s_number,2*Np), zeros(s_number,s_number)];          %aggiueere che s>0 in entrambi i casi e assicurarsi nei vincoli che anche li sia messo come che s>0
+C       =       [-eye(2*Np), zeros(2*Np,s_number); zeros(s_number,2*Np), eye(s_number,s_number);
+                eye(2*Np+s_number)];          %aggiueere che s>0 in entrambi i casi e assicurarsi nei vincoli che anche li sia messo come che s>0
 d       =       [-deltasat*ones(Np,1);
                  -asat*ones(Np,1);
                  zeros(s_number,1);
