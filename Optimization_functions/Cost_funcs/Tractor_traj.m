@@ -1,33 +1,32 @@
-function [z_sim] = Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimization_opt)
+function [z_sim] = Tractor_traj(U,z0,zf,Nu,Ns,parameters,Optimization_opt)
 %% Build vector of inputs
 
+Np=ceil(Ns/Nu);
 
 u_in        =   [U(1:Np,1)';
                 U(Np+1:2*Np,1)'];
 
 s =    U(2*Np+1:end,1);
-
+Ts=     U(end,1);
 disp(s);
 %% Run simulation with FFD
-Ts_s=Optimization_opt.Ts_s;
-Ts_p=Optimization_opt.Ts_p;
-Tend=Optimization_opt.Tend; 
 
-ztemp=z0;
 z_sim      =   zeros(4,Ns);
 z_sim(:,1) =   z0;
 
 
   for ind=2:Ns+1
-    
-        u       =  u_in(:,ceil((ind-1)*Ts_s/Ts_p));
-        zdot    =  tractor_model (ztemp,u,parameters);
-        ztemp    =  ztemp+Ts_s*zdot;
-        z_sim(:,ind)    =  ztemp;
+    if ceil(ind/Nu)<Np
+        u               =  u_in(:,ceil(ind/Nu));
+    end
+    zdot               =   tractor_model(z_sim(:,ind-1),u,parameters);
+    z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
 
   end
-
 %% Post-processing the results
+Tend=Ns*Ts;
+
+disp(Tend);
 
 plx     = z_sim(1,:);
 ply     = z_sim(2,:);
@@ -61,7 +60,6 @@ subplot(5,2,7),plot(time_s,ang),xlabel('Time (s)'),ylabel('psi'),
 subplot(5,2,8),plot(time_s,vel*3.6,time_s,maxvsat*3.6,time_s,minvsat*3.6),xlabel('Time (s)'),ylabel('velocità [km/h]')
 subplot(5,2,9);plot(time_p,del,time_p,maxdeltasat,time_p,mindeltasat),xlabel('Time (s)'),ylabel('delta ')
 subplot(5,2,10);plot(time_p,acc,time_p,maxasat,time_p,minasat),xlabel('Time (s)'),ylabel('acc [m/s]');
-
 
 
 end

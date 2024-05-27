@@ -37,13 +37,11 @@ vf      =       4/3.6;
 zf      =       [xf;yf;psif;vf];
 
 %% Control problem parameters
-Ts_p          =   0.3;                       % Sampling time of comutation of input
-Ts_s         =   0.2; 
+ 
+Ns          =   50;                    % Simulation steps
+Ts         =   0.25;             % initial guess for time step
+Nu=2;  %ogni quanti istanti di simulazione viene calcolato u
 
-Tend        =   14;% NB sbagliavamo e mettevamo una                     % Time horizon
-
-Ns          =   Tend/Ts_s;                    % Simulation steps
-Np          =   ceil(Tend/Ts_p);                  % Prediction steps
 vsat        =   20/3.6;                     % Input saturation
 asat        =   1;                      % Cart position limits
 deltasat    =   30*pi/180;
@@ -51,40 +49,33 @@ deltasat    =   30*pi/180;
 Optimization_opt.vsat       = vsat;
 Optimization_opt.deltasat   = deltasat;
 Optimization_opt.asat       = asat;
-Optimization_opt.Ts_s   = Ts_s;
-Optimization_opt.Ts_p   = Ts_p;
-Optimization_opt.Tend   = Tend;
-Optimization_opt.Np   = Np;
 Optimization_opt.Ns   = Ns;
+Optimization_opt.Nu   = Nu;
 %% Initial guess
-% U0 = load('best_initial_cond.mat').Ustar;
-% U0          = best_initial_cond;
+Np=ceil(Ns/Nu);
 s_number=4+1;
 
 U0              = [-0.5*ones(Np,1);     %delta
                    zeros(ceil(Np/2),1);-0.2*ones(floor(Np/2),1);
-                   zeros(s_number,1)];   
-% U0          = [[-1;zeros(ceil(Np/2)-1,1);0.5;zeros(floor(Np/2)-1,1)];      
-%              [0;zeros(ceil(Np/2)-1,1);-0.5;zeros(floor(Np/2)-1,1)]
-%              zeros(4,1)];      
-% % %U0=Ustar
+                   zeros(s_number,1)
+                   Ts;];      
 
 %% Linear Constraints
 
-C       =       [-eye(2*Np), zeros(2*Np,s_number); zeros(s_number,2*Np), eye(s_number,s_number);
-                eye(2*Np+s_number)];          %aggiueere che s>0 in entrambi i casi e assicurarsi nei vincoli che anche li sia messo come che s>0
-d       =       [-deltasat*ones(Np,1);
+C       =       [-eye(2*Np), zeros(2*Np,s_number+1); zeros(s_number+1,2*Np), eye(s_number+1,s_number+1);
+                eye(2*Np+s_number+1)];         
+d       =       [-deltasat*ones(Np,1);          %s_number+ 1 perchè ho le slack variables + tempo come parametri da ottimizzare >=0
                  -asat*ones(Np,1);
-                 zeros(s_number,1);
+                 zeros(s_number+1,1);           
                  -deltasat*ones(Np,1);
                  -asat*ones(Np,1);
-                  zeros(s_number,1);];
+                  zeros(s_number+1,1);];
 
 %% Parametrized Constraint
 % boundaries are expressed as y=mx+q
 % Upper bound y<mx+q
 constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   =  8;
+constr_param.q(1)   =  10;
 
 % Lower bound y<mx+q
 constr_param.m(2)   =   0; % zero for standard case
@@ -115,7 +106,7 @@ myoptions.ls_c          =	0.1;
 myoptions.ls_nitermax   =	100;
 myoptions.nitermax      =	300;
 myoptions.xsequence     =	'on';
-myoptions.outputfcn     =    @(U)Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimization_opt);
+myoptions.outputfcn     =    @(U)Tractor_traj(U,z0,zf,Nu,Ns,parameters,Optimization_opt);
 
 %% Run solver
 
@@ -128,7 +119,7 @@ tempo_trascorso = toc;
 
 
 %% calcolo stati finali
-[zstar] = stati_finali(Ustar,z0,zf,Np,Ns,parameters,Optimization_opt);
+[zstar] = stati_finali(Ustar,z0,zf,Nu,Ns,parameters,Optimization_opt);
 
 N=length(zstar);
 
@@ -138,7 +129,7 @@ ply=zeros(N,1);
 ang=zeros(N,1);
 vel=zeros(N,1);
 distN=zeros(N,1);
-
+Ts_p=Ustar(end,1)*Nu;
 for j=1:1:N
    plx(j,1)=zstar(1,j);
    ply(j,1)=zstar(2,j);
@@ -160,8 +151,8 @@ for j=1:1:Nu
 end
 
 figure(2)
-subplot(4,1,1),plot(0:Ts_s:(N-1)*Ts_s,ang),xlabel('Time (s)'),ylabel('psi'),grid on
-subplot(4,1,2),plot(0:Ts_s:(N-1)*Ts_s,vel),xlabel('Time (s)'),ylabel('velocità'),grid on
+subplot(4,1,1),plot(0:Ts:(N-1)*Ts,ang),xlabel('Time (s)'),ylabel('psi'),grid on
+subplot(4,1,2),plot(0:Ts:(N-1)*Ts,vel),xlabel('Time (s)'),ylabel('velocità'),grid on
 subplot(4,1,3);plot(0:Ts_p:(Nu-1)*Ts_p,del),xlabel('Time (s)'),ylabel('delta'),grid on
 subplot(4,1,4);plot(0:Ts_p:(Nu-1)*Ts_p,acc),xlabel('Time (s)'),ylabel('acc'),grid on;
 
@@ -188,7 +179,7 @@ ha2.EdgeColor = 'red';
 
 
 % Visualizza il tempo trascorso
-disp(['Tempo trascorso: ', num2str(tempo_trascorso), ' secondi']);
+disp(['Tempo per calcolo: ', num2str(tempo_trascorso), ' secondi']);
 
 %% Save figures
 % m_string = replace(sprintf('m%.1f__q%.2f',constr_param.m(1),constr_param.q(1)),'.','');
