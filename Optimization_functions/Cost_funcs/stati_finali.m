@@ -10,7 +10,7 @@ Tend=Optimization_opt.Tend;
 %% Build vector of inputs
 
 u_in        =   [U(1:Np,1)';
-                U(Np+1:end,1)'];
+                U(Np+1:2*Np,1)'];
 
 %% Simulation 
 Ts_s=Optimization_opt.Ts_s;

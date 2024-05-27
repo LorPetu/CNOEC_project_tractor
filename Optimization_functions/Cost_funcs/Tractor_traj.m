@@ -1,9 +1,13 @@
 function [z_sim] = Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimization_opt)
 %% Build vector of inputs
 
-u_in        =   [   U(1:Np,1)';
-                    U(Np+1:end,1)'];
 
+u_in        =   [U(1:Np,1)';
+                U(Np+1:2*Np,1)'];
+
+s =    U(2*Np+1:end,1);
+
+disp(s);
 %% Run simulation with FFD
 Ts_s=Optimization_opt.Ts_s;
 Ts_p=Optimization_opt.Ts_p;

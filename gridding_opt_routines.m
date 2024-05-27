@@ -42,7 +42,7 @@ zf      =       [xf;yf;psif;vf];
 Ts_p          =   0.3;                       % Sampling time of comutation of input
 Ts_s         =   0.2; 
 
-Tend        =   14;% NB sbagliavamo e mettevamo una                     % Time horizon
+Tend        =   12;% NB sbagliavamo e mettevamo una                     % Time horizon
 
 Ns          =   Tend/Ts_s;                    % Simulation steps
 Np          =   ceil(Tend/Ts_p);                  % Prediction steps
@@ -61,7 +61,7 @@ Optimization_opt.Ns   = Ns;
 %% Initial guess
 % U0 = load('best_initial_cond.mat').Ustar;
 % U0          = best_initial_cond;
-% U0              = [zeros(Np,1);     %delta
+% U0              = [-0.5*ones(Np,1);     %delta
 %                    zeros(Np,1)];    %acceleration
  U0          = [[-1;zeros(ceil(Np/2)-1,1);0.5;zeros(floor(Np/2)-1,1)];      
                 [0;zeros(ceil(Np/2)-1,1);-0.5;zeros(floor(Np/2)-1,1)]];      
@@ -103,7 +103,6 @@ myoptions               =   myoptimset_const;
 myoptions.Hessmethod  	=	'BFGS';
 myoptions.gradmethod  	=	'CD';
 myoptions.graddx        =	2^-17;
-myoptions.GN_funF       = @(U)tractor_cost_GN_grad_constr(U,z0,zf,parameters,Optimization_opt);
 myoptions.tolgrad    	=	1e-12;
 myoptions.tolfun    	=	1e-8;
 myoptions.tolconstr     =   4e-2;

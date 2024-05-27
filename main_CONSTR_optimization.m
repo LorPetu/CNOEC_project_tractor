@@ -3,8 +3,6 @@ clear all
 close all
 clc
 
-i=sqrt(-1);
-
 addpath(genpath('Models/'));
 addpath(genpath('Optimization_functions/'));
 
@@ -39,8 +37,8 @@ vf      =       4/3.6;
 zf      =       [xf;yf;psif;vf];
 
 %% Control problem parameters
-Ts_p          =   0.3;                       % Sampling time of comutation of input
-Ts_s         =   0.2; 
+Ts_p          =   0.25;                       % Sampling time of comutation of input
+Ts_s         =   0.1; 
 
 Tend        =   14;% NB sbagliavamo e mettevamo una                     % Time horizon
 
@@ -61,26 +59,32 @@ Optimization_opt.Ns   = Ns;
 %% Initial guess
 % U0 = load('best_initial_cond.mat').Ustar;
 % U0          = best_initial_cond;
-% U0              = [zeros(Np,1);     %delta
-%                    zeros(Np,1)];    %acceleration
- U0          = [[-1;zeros(ceil(Np/2)-1,1);0.5;zeros(floor(Np/2)-1,1)];      
-                [0;zeros(ceil(Np/2)-1,1);-0.5;zeros(floor(Np/2)-1,1)]];      
+s_number=4+1;
+
+U0              = [-0.5*ones(Np,1);     %delta
+                   zeros(Np/2,1);-0.2*ones(Np/2,1);
+                   zeros(s_number,1)];   
+% U0          = [[-1;zeros(ceil(Np/2)-1,1);0.5;zeros(floor(Np/2)-1,1)];      
+%              [0;zeros(ceil(Np/2)-1,1);-0.5;zeros(floor(Np/2)-1,1)]
+%              zeros(4,1)];      
 % % %U0=Ustar
 
 %% Linear Constraints
 
-C       =       [-eye(2*Np)
-                eye(2*Np)];
+C       =       [-eye(2*Np), zeros(2*Np,s_number); zeros(s_number,2*Np), zeros(s_number,s_number);
+                eye(2*Np), zeros(2*Np,s_number); zeros(s_number,2*Np), zeros(s_number,s_number)];          %aggiueere che s>0 in entrambi i casi e assicurarsi nei vincoli che anche li sia messo come che s>0
 d       =       [-deltasat*ones(Np,1);
                  -asat*ones(Np,1);
+                 zeros(s_number,1);
                  -deltasat*ones(Np,1);
-                 -asat*ones(Np,1);];
+                 -asat*ones(Np,1);
+                  zeros(s_number,1);];
 
 %% Parametrized Constraint
 % boundaries are expressed as y=mx+q
 % Upper bound y<mx+q
 constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   = 5.5;
+constr_param.q(1)   =  3;
 
 % Lower bound y<mx+q
 constr_param.m(2)   =   0; % zero for standard case
@@ -102,15 +106,14 @@ myoptions               =   myoptimset_const;
 myoptions.Hessmethod  	=	'BFGS';
 myoptions.gradmethod  	=	'CD';
 myoptions.graddx        =	2^-17;
-myoptions.GN_funF       = @(U)tractor_cost_GN_grad_constr(U,z0,zf,parameters,Optimization_opt);
-myoptions.tolgrad    	=	1e-12;
-myoptions.tolfun    	=	1e-8;
-myoptions.tolconstr     =   4e-2;
-myoptions.ls_tkmax      =   1.3; %before 1
-myoptions.ls_beta       =	0.8;
-myoptions.ls_c          =	0.08;
+myoptions.tolgrad    	=	1e-10;
+myoptions.tolfun    	=	1e-12;
+myoptions.tolconstr     =   1e-6;
+myoptions.ls_tkmax      =   2; %before 1
+myoptions.ls_beta       =	0.75;
+myoptions.ls_c          =	0.1;
 myoptions.ls_nitermax   =	100;
-myoptions.nitermax      =	200;
+myoptions.nitermax      =	300;
 myoptions.xsequence     =	'on';
 myoptions.outputfcn     =    @(U)Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimization_opt);
 
@@ -149,7 +152,7 @@ end
 
 sum(distN)
 
-Nu=length(Ustar)/2;
+Nu=Np;
 
 for j=1:1:Nu
    del(j,1)=Ustar(j,1);
@@ -182,19 +185,21 @@ ha2 = annotation('textbox',ann2pos,'string',ann2str);
 ha2.HorizontalAlignment = 'left';
 ha2.EdgeColor = 'red';
 
-%% Save figures
-m_string = replace(sprintf('m%.1f__q%.2f',constr_param.m(1),constr_param.q(1)),'.','');
-figname = sprintf('%.f___%s__q%.f ',exitflag,m_string);
-saveas(figure(3),[pwd '/Constr_sat01/' figname]);
-saveas(figure(2),[pwd '/Constr_sat01/' figname '_states']);
-
-fprintf('   xfinale    xtarget     error\n %f    %f    %f\n',plx(N,1),zf(1),abs(plx(end,1)-zf(1)));
-fprintf('   yfinale    ytarget     error\n %f    %f    %f\n',ply(N,1),zf(2),abs(ply(end,1)-zf(2)));
-fprintf('   psifinale  psitarget   error\n %f    %f    %f\n',ang(N,1),psif,abs(ang(end,1)-psif));
-fprintf('   vfinale    vtarget     error\n %f    %f    %f\n\n',vel(N,1),vf,abs(vel(end,1)-vf));
-
 
 
 % Visualizza il tempo trascorso
 disp(['Tempo trascorso: ', num2str(tempo_trascorso), ' secondi']);
+
+%% Save figures
+% m_string = replace(sprintf('m%.1f__q%.2f',constr_param.m(1),constr_param.q(1)),'.','');
+% figname = sprintf('%.f___%s__q%.f ',exitflag,m_string);
+% saveas(figure(3),[pwd '/Constr_sat01/' figname]);
+% saveas(figure(2),[pwd '/Constr_sat01/' figname '_states']);
+% 
+% fprintf('   xfinale    xtarget     error\n %f    %f    %f\n',plx(N,1),zf(1),abs(plx(end,1)-zf(1)));
+% fprintf('   yfinale    ytarget     error\n %f    %f    %f\n',ply(N,1),zf(2),abs(ply(end,1)-zf(2)));
+% fprintf('   psifinale  psitarget   error\n %f    %f    %f\n',ang(N,1),psif,abs(ang(end,1)-psif));
+% fprintf('   vfinale    vtarget     error\n %f    %f    %f\n\n',vel(N,1),vf,abs(vel(end,1)-vf));
+% 
+
 
