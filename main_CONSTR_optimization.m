@@ -37,8 +37,8 @@ vf      =       4/3.6;
 zf      =       [xf;yf;psif;vf];
 
 %% Control problem parameters
-Ts_p          =   0.25;                       % Sampling time of comutation of input
-Ts_s         =   0.1; 
+Ts_p          =   0.3;                       % Sampling time of comutation of input
+Ts_s         =   0.2; 
 
 Tend        =   14;% NB sbagliavamo e mettevamo una                     % Time horizon
 
