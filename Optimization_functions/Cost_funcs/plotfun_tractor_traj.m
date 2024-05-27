@@ -1,4 +1,4 @@
-function stop = plotfun_tractor_traj(U,optimValues,state)
+function stop = plotfun_tractor_traj(U,optimValues,state,Optimization_opt)
 persistent Ts_s Ts_p Tend Ns Np z0 parameters vsat asat deltasat % Retain these values throughout the optimization
 stop = false;
 switch state
@@ -38,8 +38,11 @@ switch state
     case "iter"
         %% Build vector of inputs
         ztemp=z0;
-        u_in        =   [   U(1:Np,1)';
-                            U(Np+1:end,1)'];
+        u_in        =   [U(1:Np,1)';
+                        U(Np+1:2*Np,1)'];
+        
+        s =    U(2*Np+1:end,1);
+        %disp(s)
 
         %% Simulate trajectory
         z_sim      =   zeros(4,Ns);

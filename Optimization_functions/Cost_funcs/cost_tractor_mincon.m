@@ -22,44 +22,49 @@ zf = constr_param.zf;
 
 
 u_in        =   [U(1:Np,1)';
-                U(Np+1:end,1)'];
+                U(Np+1:2*Np,1)'];
 
+s =    U(2*Np+1:end,1);
 
 %% Run simulation with FFD
 zdot        =   zeros(4,1);
-e           =   zeros(4,1);
-ztemp       =   z0; 
+% e_x          =   zeros(1,Ns);
+% e_y          =   zeros(1,Ns); 
 z_sim      =   zeros(4,Ns+1);
 z_sim(:,1) =   z0;
 f=0;
+
 for ind=2:Ns+1
+
+
     u               =  u_in(:,ceil((ind-1)*Ts_s/Ts_p));
     zdot               =   tractor_model(z_sim(:,ind-1),u,parameters);
     z_sim(:,ind)       =   z_sim(:,ind-1)+Ts_s*zdot;
-    e = z_sim(1:2, ind)-z_sim(1:2, ind-1);
 
-    f= f +1*(e'*e); 
+    f=f+1e4*((z_sim(1:2, ind)-z_sim(1:2, ind-1))'*(z_sim(1:2, ind)-z_sim(1:2, ind-1)));
+    
+    % e_x = (z_sim(1, ind)-zf(1));
+    % e_y = (z_sim(2, ind)-zf(2));
+
 end 
 
-% delta_delta=u_in(1,2:end)-u_in(1,1:end-1);
+delta_delta=u_in(1,2:end)-u_in(1,1:end-1);
 delta_acc=u_in(2,2:end)-u_in(2,1:end-1);
-% 
-f=f+1e2*(delta_acc*delta_acc') ;%(delta_delta*delta_delta')+1e3*(delta_acc*delta_acc');
+% delta_ex=e_x(2:end)-e_x(1:end-1);
+% delta_ey=e_y(2:end)-e_y(1:end-1);
 
+f = f+ 1e3*(delta_acc*delta_acc') ...
+    +1e6*(s'*s);
 
-% %% Equality constraints g(x)
-% g = [z_sim(:,end)-zf];
-% 
-% %% Inequality constraints h(x)
-% 
-% h = [(z_sim(4,2:end)+vsat*ones(1,Ns))'; %not zero, otherwhise constraint would not be satisfied
-%     (-z_sim(4,2:end)+vsat*ones(1,Ns))';
-%     % Parametrized constrained
-%     (-z_sim(2,2:end)+m_up*z_sim(1,2:end)+q_up*ones(1,Ns))'; % -y + m*x + q > 0 y < m*x+q
-%     (z_sim(2,2:end)-m_down*z_sim(1,2:end)-q_down*ones(1,Ns))']; % y - m*x - q > 0
-% 
-% 
-% %% Stack cost and constraints
-% v           =   [f;g;h];
+%% Other attempts terms in cost function
+    %+1e-1*(-(u_in(1,:)*u_in(1,:)'))...
+    % +1e3*(e_x*e_x')...
+    % +1e4*(e_y*e_y')...
+    % 1e-4*(delta_acc*delta_acc')...
+    %+1e-3*(delta_delta*delta_delta')...
+    % +1*(delta_ex*delta_ex')...
+    % +1*(delta_ey*delta_ey')...
+    %+1e1*(-(u_in(1,:)*u_in(1,:)'))...
+    %+1e8*(z_sim(:,end)-zf)'*(z_sim(:,end)-zf);
 
 end

@@ -3,8 +3,6 @@ clear all
 close all
 clc
 
-i=sqrt(-1);
-
 addpath(genpath('Models/'));
 addpath(genpath('Optimization_functions/'));
 
@@ -61,23 +59,30 @@ Optimization_opt.Ns   = Ns;
 %% Initial guess
 % U0 = load('best_initial_cond.mat').Ustar;
 % U0          = best_initial_cond;
-% U0              = [zeros(Np,1);     %delta
-%                    zeros(Np,1)];    %acceleration
- U0          = [[-1;zeros(ceil(Np/2)-1,1);0.5;zeros(floor(Np/2)-1,1)];      
-                [0;zeros(ceil(Np/2)-1,1);-0.5;zeros(floor(Np/2)-1,1)]];      
+s_number=4+1;
+% 
+U0              = [-0.5*ones(Np,1);     %delta
+                   zeros(ceil(Np/2),1);
+                   -0.2*ones(floor(Np/2),1);
+                   zeros(s_number,1)];   
+% U0          = [-1;zeros(ceil(Np/2)-1,1);0.5;zeros(floor(Np/2)-1,1);      
+%              0;zeros(ceil(Np/2)-1,1);-0.5;zeros(floor(Np/2)-1,1);
+%              zeros(s_number,1)];
+%              zeros(4,1)];      
 % % %U0=Ustar
 
 %% Linear Constraints
-% 
-% C       =       [-eye(2*Np)
-%                 eye(2*Np)];
+
 lb       =       [-deltasat*ones(Np,1);
-                 -asat*ones(Np,1);];
+                 -asat*ones(Np,1);
+                 zeros(s_number,1)];
+
 ub        =        [deltasat*ones(Np,1);
-                 asat*ones(Np,1);];
+                   asat*ones(Np,1)];
 
 %% Parametrized Constraint
 % boundaries are expressed as y=mx+q
+
 % Upper bound y<mx+q
 constr_param.m(1)   =  0; % zero for standard case
 constr_param.q(1)   = 10;
@@ -89,12 +94,6 @@ constr_param.q(2)   =   0;
 
 zf(2) = constr_param.m(2)*zf(1) + constr_param.q(2); 
 constr_param.zf = zf;
-
-% Number of equality constraints
-p = 4;
-
-% Number of inequality constraints
-q = 4*Ns;
 
 %% Solution -  BFGS
 % Initialize solver options
@@ -125,7 +124,7 @@ myoptions.outputfcn     =    @(U)Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimizat
    %   FiniteDifferenceStepSize: 'sqrt(eps)'
    %       FiniteDifferenceType: 'forward'
    %       HessianApproximation: 'bfgs'
-   %                 HessianFcn: []
+   %                 HessianFcn: []6
    %         HessianMultiplyFcn: []
    %                HonorBounds: 1
    %     MaxFunctionEvaluations: 3000
@@ -143,12 +142,14 @@ myoptions.outputfcn     =    @(U)Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimizat
    %                UseParallel: 0
 
 options = optimoptions(@fmincon,...
-    'Algorithm','interior-point',...
+    'Algorithm','sqp',...
     'FiniteDifferenceType','central',...
-    'ConstraintTolerance', 2e-3,...  
-    "EnableFeasibilityMode",false,...   
+    'ConstraintTolerance', 1e-8,... 
+    'FunctionTolerance',1e-15,...
     'MaxFunctionEvaluations',10e5, ...
     'MaxIterations',500,...
+    'StepTolerance',1e-15,...
+    'OptimalityTolerance',1e-15,...    
     'PlotFcn', {@plotfun_tractor_traj,@optimplotfval},... %,@optimplotfval
     'Display','iter-detailed');
 
@@ -187,7 +188,7 @@ end
 
 sum(distN);
 
-Nu=length(Ustar)/2;
+Nu=Np;
 
 for j=1:1:Nu
    del(j,1)=Ustar(j,1);

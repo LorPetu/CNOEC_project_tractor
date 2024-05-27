@@ -62,7 +62,7 @@ Optimization_opt.Ns   = Ns;
 s_number=4+1;
 
 U0              = [-0.5*ones(Np,1);     %delta
-                   zeros(Np/2,1);-0.2*ones(Np/2,1);
+                   zeros(ceil(Np/2),1);-0.2*ones(floor(Np/2),1);
                    zeros(s_number,1)];   
 % U0          = [[-1;zeros(ceil(Np/2)-1,1);0.5;zeros(floor(Np/2)-1,1)];      
 %              [0;zeros(ceil(Np/2)-1,1);-0.5;zeros(floor(Np/2)-1,1)]
@@ -84,7 +84,7 @@ d       =       [-deltasat*ones(Np,1);
 % boundaries are expressed as y=mx+q
 % Upper bound y<mx+q
 constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   =  3;
+constr_param.q(1)   =  8;
 
 % Lower bound y<mx+q
 constr_param.m(2)   =   0; % zero for standard case
@@ -120,9 +120,9 @@ myoptions.outputfcn     =    @(U)Tractor_traj(U,z0,zf,Np,Ns,parameters,Optimizat
 %% Run solver
 
 tic ;
-@(U)deal(tractor_cost_constr(U, z0, parameters, Optimization_opt, constr_param)[1]);
-% [Ustar,fxstar,niter,exitflag,xsequence] = myfmincon(@(U)tractor_cost_constr(U,z0,parameters,Optimization_opt,constr_param),U0,[],[],C,d,p,q,myoptions);
-[x,fval,exitflag,output] = @(U)nested_fmincon(U,z0,parameters,Optimization_opt,constr_param,U0,C,d,[],[],[],[]);
+
+[Ustar,fxstar,niter,exitflag,xsequence] = myfmincon(@(U)tractor_cost_constr(U,z0,parameters,Optimization_opt,constr_param),U0,[],[],C,d,p,q,myoptions);
+% [x,fval,exitflag,output] = @(U)nested_fmincon(U,z0,parameters,Optimization_opt,constr_param,U0,C,d,[],[],[],[]);
 
 tempo_trascorso = toc;
 

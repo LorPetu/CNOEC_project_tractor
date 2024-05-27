@@ -1,4 +1,4 @@
-function [f,h,g] = tractor_cost_constr(U,z0,parameters,Optimization_opt, constr_param)
+function v = tractor_cost_constr(U,z0,parameters,Optimization_opt, constr_param)
 % Function that computes the trajectory of the tractor exiting from a row
 % and the constraint
 
@@ -94,8 +94,7 @@ h = [(z_sim(4,2:end)+vsat*ones(1,Ns))'; %not zero, otherwhise constraint would n
 
 
 %% Stack cost and constraints
-% fun         = f;
-% constr      = h;
-% v           =   [f;g;h];
+
+v           =   [f;g;h];
 
 end
