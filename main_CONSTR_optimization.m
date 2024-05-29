@@ -131,9 +131,9 @@ vel=zeros(N,1);
 distN=zeros(N,1);
 
 Ts_p=Ustar(end,1)*Nu;
-T_s = Ustar(end,1);
+Ts = Ustar(end,1);
 % Visualizza il tempo trascorso
-disp(['Tempo finale Tend: ', num2str(T_s*Ns), ' secondi']);
+disp(['Tempo finale Tend: ', num2str(Ts*Ns), ' secondi']);
 
 for j=1:1:N
    plx(j,1)=zstar(1,j);
@@ -148,18 +148,16 @@ end
 
 sum(distN);
 
-Nu=Np;
-
-for j=1:1:Nu
+for j=1:1:Np
    del(j,1)=Ustar(j,1);
-   acc(j,1)=Ustar(Nu+j,1);
+   acc(j,1)=Ustar(Np+j,1);
 end
 
 figure(2)
 subplot(4,1,1),plot(0:Ts:(N-1)*Ts,ang),xlabel('Time (s)'),ylabel('psi'),grid on
 subplot(4,1,2),plot(0:Ts:(N-1)*Ts,vel),xlabel('Time (s)'),ylabel('velocità'),grid on
-subplot(4,1,3);plot(0:Ts_p:(Nu-1)*Ts_p,del),xlabel('Time (s)'),ylabel('delta'),grid on
-subplot(4,1,4);plot(0:Ts_p:(Nu-1)*Ts_p,acc),xlabel('Time (s)'),ylabel('acc'),grid on;
+subplot(4,1,3);plot(0:Ts_p:(Np-1)*Ts_p,del),xlabel('Time (s)'),ylabel('delta'),grid on
+subplot(4,1,4);plot(0:Ts_p:(Np-1)*Ts_p,acc),xlabel('Time (s)'),ylabel('acc'),grid on;
 
 
 figure(3)

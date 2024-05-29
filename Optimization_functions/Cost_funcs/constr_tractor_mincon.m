@@ -5,11 +5,9 @@ function [h, g] = constr_tractor_mincon(U,z0,parameters,Optimization_opt, constr
 vsat = Optimization_opt.vsat;
 deltasat = Optimization_opt.deltasat;
 asat = Optimization_opt.asat;
-Ts_s=Optimization_opt.Ts_s;
-Ts_p=Optimization_opt.Ts_p;
-Tend=Optimization_opt.Tend;  
+
 Ns = Optimization_opt.Ns;
-Np = Optimization_opt.Np;
+Nu=Optimization_opt.Nu;
 
 m_up= constr_param.m(1);
 m_down= constr_param.m(2);
@@ -20,12 +18,14 @@ zf = constr_param.zf;
 
 
 
+Np=ceil(Ns/Nu);
+
 u_in        =   [U(1:Np,1)';
                 U(Np+1:2*Np,1)'];
 
-s =    U(2*Np+1:end,1);
+s =    U(2*Np+1:end-1,1);
 
-
+Ts=     U(end,1);
 
 %% Run simulation with FFD
 
@@ -34,14 +34,17 @@ e_x          =   zeros(1,Ns);
 e_y          =   zeros(1,Ns); 
 z_sim      =   zeros(4,Ns+1);
 z_sim(:,1) =   z0;
+f=0;
 
 for ind=2:Ns+1
-
-
-    u               =  u_in(:,ceil((ind-1)*Ts_s/Ts_p));
+    if ceil(ind/Nu)<Np
+        u               =  u_in(:,ceil(ind/Nu));
+    end
     zdot               =   tractor_model(z_sim(:,ind-1),u,parameters);
-    z_sim(:,ind)       =   z_sim(:,ind-1)+Ts_s*zdot;
-    
+    z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
+
+    f=f+1*((z_sim(1:2, ind)-z_sim(1:2, ind-1))'*(z_sim(1:2, ind)-z_sim(1:2, ind-1)));
+
     e_x = (z_sim(1, ind)-zf(1));
     e_y = (z_sim(2, ind)-zf(2));
 
@@ -63,7 +66,7 @@ g= [(abs(e_x(end))-s(1,1));                %uguaglianza con slask variables sull
 
 %% Inequality constraints h(x)
 
-h = [(-z_sim(4,2:end)-0*ones(1,Ns))'; %not zero, otherwhise constraint would not be satisfied
+h = [(-z_sim(4,2:end)-vsat*ones(1,Ns))'; %not zero, otherwhise constraint would not be satisfied
     (+z_sim(4,2:end)-vsat*ones(1,Ns))';
    
 % Parametrized constrained

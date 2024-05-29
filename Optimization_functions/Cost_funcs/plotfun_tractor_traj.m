@@ -1,16 +1,13 @@
-function stop = plotfun_tractor_traj(U,optimValues,state,Optimization_opt)
-persistent Ts_s Ts_p Tend Ns Np z0 parameters vsat asat deltasat % Retain these values throughout the optimization
+function stop = plotfun_tractor_traj(U,optimValues,state)
+persistent Ns Nu z0 parameters vsat asat deltasat % Retain these values throughout the optimization
 stop = false;
 switch state
     case "init"
         %% Run simulation with FFD
-        Ts_p=0.3; %Optimization_opt.Ts_p;
-        Ts_s=0.2; %Optimization_opt.Ts_s;
+        %% Build vector of inputs
+        Ns          =   50;                    % Simulation steps
 
-        Tend=14; %Optimization_opt.Tend; 
-
-        Ns          =   Tend/Ts_s;                    % Simulation steps
-        Np          =   ceil(Tend/Ts_p);                  % Prediction steps
+        Nu=2;  %ogni quanti istanti di simulazione viene calcolato u
         %% Model Parameters
 
         Lt        =   1.85;                  % Wheelbase (m)
@@ -38,22 +35,24 @@ switch state
     case "iter"
         %% Build vector of inputs
         ztemp=z0;
+        Np=ceil(Ns/Nu);
+        
         u_in        =   [U(1:Np,1)';
                         U(Np+1:2*Np,1)'];
         
         s =    U(2*Np+1:end,1);
-        %disp(s)
+        Ts=     U(end,1); 
 
         %% Simulate trajectory
         z_sim      =   zeros(4,Ns);
         z_sim(:,1) =   z0;
 
         for ind=2:Ns+1
-        
-            u       =  u_in(:,ceil((ind-1)*Ts_s/Ts_p));
-            zdot    =  tractor_model (ztemp,u,parameters);
-            ztemp    =  ztemp+Ts_s*zdot;
-            z_sim(:,ind)    =  ztemp;
+            if ceil(ind/Nu)<Np
+                u               =  u_in(:,ceil(ind/Nu));
+            end
+            zdot               =   tractor_model(z_sim(:,ind-1),u,parameters);
+            z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
     
         end
 
@@ -77,8 +76,8 @@ switch state
         % plxf = zf(1,1);
         % plyf = zf(2,1);
         
-        time_s=linspace(0,Tend,Ns+1);
-        time_p=linspace(0,Tend,Np);
+        time_s=linspace(0,Ts*Ns,Ns+1);
+        time_p=linspace(0,Ts*Ns,Np);
         plot(z_sim(1,:),z_sim(2,:)),daspect([1,1,1]),grid on,axis([-5 10 -2 12])
         xlabel('x'), ylabel('y'),title(sprintf('Trajectory at k = %d',optimValues.iteration))
         
