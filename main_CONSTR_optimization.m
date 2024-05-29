@@ -75,7 +75,7 @@ d       =       [-deltasat*ones(Np,1);          %s_number+ 1 perchè ho le slack
 % boundaries are expressed as y=mx+q
 % Upper bound y<mx+q
 constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   =  10;
+constr_param.q(1)   =  8;
 
 % Lower bound y<mx+q
 constr_param.m(2)   =   0; % zero for standard case
@@ -119,7 +119,7 @@ tempo_trascorso = toc;
 
 
 %% calcolo stati finali
-[zstar] = stati_finali(Ustar,z0,zf,Nu,Ns,parameters,Optimization_opt);
+[zstar] = Tractor_traj(Ustar,z0,zf,Nu,Ns,parameters,Optimization_opt);
 
 N=length(zstar);
 
@@ -129,7 +129,12 @@ ply=zeros(N,1);
 ang=zeros(N,1);
 vel=zeros(N,1);
 distN=zeros(N,1);
+
 Ts_p=Ustar(end,1)*Nu;
+T_s = Ustar(end,1);
+% Visualizza il tempo trascorso
+disp(['Tempo finale Tend: ', num2str(T_s*Ns), ' secondi']);
+
 for j=1:1:N
    plx(j,1)=zstar(1,j);
    ply(j,1)=zstar(2,j);
@@ -141,7 +146,7 @@ for i=2:1:N
        distN =sqrt((plx(i,1)-plx(i-1,1))^2 + (ply(i,1)-ply(i-1,1))^2);
 end
 
-sum(distN)
+sum(distN);
 
 Nu=Np;
 

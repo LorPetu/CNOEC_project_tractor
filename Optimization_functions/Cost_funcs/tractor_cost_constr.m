@@ -41,8 +41,8 @@ for ind=2:Ns+1
     zdot               =   tractor_model(z_sim(:,ind-1),u,parameters);
     z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
 
-    f=f+1e2*((z_sim(1:2, ind)-z_sim(1:2, ind-1))'*(z_sim(1:2, ind)-z_sim(1:2, ind-1)));
-    
+    f=f+1*((z_sim(1:2, ind)-z_sim(1:2, ind-1))'*(z_sim(1:2, ind)-z_sim(1:2, ind-1)));
+
     e_x = (z_sim(1, ind)-zf(1));
     e_y = (z_sim(2, ind)-zf(2));
 
@@ -53,8 +53,9 @@ delta_acc=u_in(2,2:end)-u_in(2,1:end-1);
 delta_ex=e_x(2:end)-e_x(1:end-1);
 delta_ey=e_y(2:end)-e_y(1:end-1);
 
-f = f+1*(delta_acc*delta_acc')+ 1*(delta_delta*delta_delta')...
-    +1e4*(s'*s)+3e4*Ts;
+f =  f +0.5*(delta_acc*delta_acc')... 
+    + 2e2*(s'*s)+4e2*Ts;
+   % -10*z_sim(4,end)*z_sim(4,end)';
 
 
 

@@ -41,7 +41,7 @@ for ind=2:Ns+1
     zdot               =   tractor_model(z_sim(:,ind-1),u,parameters);
     z_sim(:,ind)       =   z_sim(:,ind-1)+Ts_s*zdot;
 
-    f=f+1e4*((z_sim(1:2, ind)-z_sim(1:2, ind-1))'*(z_sim(1:2, ind)-z_sim(1:2, ind-1)));
+    f=f+1*((z_sim(1:2, ind)-z_sim(1:2, ind-1))'*(z_sim(1:2, ind)-z_sim(1:2, ind-1)));
     
     % e_x = (z_sim(1, ind)-zf(1));
     % e_y = (z_sim(2, ind)-zf(2));
@@ -54,8 +54,8 @@ delta_acc=u_in(2,2:end)-u_in(2,1:end-1);
 % delta_ey=e_y(2:end)-e_y(1:end-1);
 
 f = f + ...
-    + 1e4*(delta_acc*delta_acc')...
-    + 1e7*s(1:2)'*s(1:2) + 1e6*s(3:4)'*s(3:4);
+    + 1*(delta_acc*delta_acc')...
+    + 2e2*s(1:2)'*s(1:2) + 1e2*s(3:4)'*s(3:4);
 
 %% Other attempts terms in cost function
     %+1e-1*(-(u_in(1,:)*u_in(1,:)'))...

@@ -8,11 +8,12 @@ u_in        =   [U(1:Np,1)';
 
 s =    U(2*Np+1:end,1);
 Ts=     U(end,1);
-disp(s);
+%disp(s);
 %% Run simulation with FFD
 
 z_sim      =   zeros(4,Ns);
 z_sim(:,1) =   z0;
+f_1 = 0;
 
 
   for ind=2:Ns+1
@@ -22,11 +23,23 @@ z_sim(:,1) =   z0;
     zdot               =   tractor_model(z_sim(:,ind-1),u,parameters);
     z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
 
+    % Cost function evaluation
+     f_1=f_1+1*((z_sim(1:2, ind)-z_sim(1:2, ind-1))'*(z_sim(1:2, ind)-z_sim(1:2, ind-1)));
+
   end
+
+delta_delta=u_in(1,2:end)-u_in(1,1:end-1);
+delta_acc=u_in(2,2:end)-u_in(2,1:end-1);
+% 
+% f = f +1*(delta_acc*delta_acc')+ 1*(delta_delta*delta_delta')...
+%     + 1e4*(s'*s)+2e4*Ts;
+
+fprintf("fcn1: %.2f  delta_acc: %.2f   delta_delta: %.2f  slack_violation: %.2f   T_s: %.2f \r\r",f_1, 0.5*(delta_acc*delta_acc'),1*(delta_delta*delta_delta'),2e2*(s'*s),4e2*Ts)
+
 %% Post-processing the results
 Tend=Ns*Ts;
 
-disp(Tend);
+% disp(Tend);
 
 plx     = z_sim(1,:);
 ply     = z_sim(2,:);
