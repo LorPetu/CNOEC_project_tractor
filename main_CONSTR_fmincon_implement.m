@@ -78,11 +78,11 @@ ub        =        [deltasat*ones(Np,1);
 % boundaries are expressed as y=mx+q
 
 % Upper bound y<mx+q
-constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   = 10;
+constr_param.m(1)   =  0.5; % zero for standard case
+constr_param.q(1)   = 7;
 
 % Lower bound y<mx+q
-constr_param.m(2)   =   0; % zero for standard case
+constr_param.m(2)   =   0.5; % zero for standard case
 constr_param.q(2)   =   0; 
 
 
@@ -144,52 +144,63 @@ tempo_trascorso = toc;
 %% calcolo stati finali
 [zstar] = Tractor_traj(Ustar,z0,zf,Nu,Ns,parameters,Optimization_opt);
 % 
-N=length(zstar);
-
-
- 
-Ts_p= Ustar(end,1)*Nu;
-Ts  = Ustar(end,1);
-
-% Visualizza il tempo trascorso
-disp(['Tempo finale Tend: ', num2str(Ts*Ns), ' secondi']);
- 
-
-plx =   zstar(1,:)';
-ply =   zstar(2,:)';
-ang =   zstar(3,:)';
-vel =   zstar(4,:)';
-
-delta   =   Ustar(1:Np,1);
-acc     =   Ustar(Np+1:end-s_number-1,1);
-
-
-figure(2)
-subplot(4,1,1),plot(0:Ts:(N-1)*Ts,ang),xlabel('Time (s)'),ylabel('psi'),grid on
-subplot(4,1,2),plot(0:Ts:(N-1)*Ts,vel),xlabel('Time (s)'),ylabel('velocità'),grid on
-subplot(4,1,3);plot(0:Ts_p:(Np-1)*Ts_p,delta),xlabel('Time (s)'),ylabel('delta'),grid on
-subplot(4,1,4);plot(0:Ts_p:(Np-1)*Ts_p,acc),xlabel('Time (s)'),ylabel('acc'),grid on;
-
-
-figure(3)
-plot(plx,ply,'o');hold on;
-plot(plx,constr_param.m(2)*plx + constr_param.q(2),"red"); hold on;
-plot(plx,constr_param.m(1)*plx + constr_param.q(1),"red"); hold on;
-plot(zf(1),zf(2),"xr",'MarkerSize', 10, 'LineWidth', 2);daspect([1 1 1]);xlabel('x'); ylabel('y');title('traiettoria'),grid on
-%
-
+% N=length(zstar);
+% 
+% close all
+% plx=zeros(N,1);
+% ply=zeros(N,1);
+% ang=zeros(N,1);
+% vel=zeros(N,1);
+% distN=zeros(N,1);
+% 
+% Ts_p= Ustar(end,1)*Nu;
+% Ts  = Ustar(end,1);
+% % Visualizza il tempo trascorso
+% disp(['Tempo finale Tend: ', num2str(Ts*Ns), ' secondi']);
+% 
+% for j=1:1:N
+%    plx(j,1)=zstar(1,j);
+%    ply(j,1)=zstar(2,j);
+%    ang(j,1)=zstar(3,j);
+%    vel(j,1)=zstar(4,j);
+% end
+% 
+% for i=2:1:N
+%        distN =sqrt((plx(i,1)-plx(i-1,1))^2 + (ply(i,1)-ply(i-1,1))^2);
+% end
+% 
+% sum(distN);
+% 
+% for j=1:1:Np
+%    del(j,1)=Ustar(j,1);
+%    acc(j,1)=Ustar(Np+j,1);
+% end
+% 
+% figure(2)
+% subplot(4,1,1),plot(0:Ts:(N-1)*Ts,ang),xlabel('Time (s)'),ylabel('psi'),grid on
+% subplot(4,1,2),plot(0:Ts:(N-1)*Ts,vel),xlabel('Time (s)'),ylabel('velocità'),grid on
+% subplot(4,1,3);plot(0:Ts_p:(Np-1)*Ts_p,del),xlabel('Time (s)'),ylabel('delta'),grid on
+% subplot(4,1,4);plot(0:Ts_p:(Np-1)*Ts_p,acc),xlabel('Time (s)'),ylabel('acc'),grid on;
+% 
+% 
+% figure(3)
+% plot(plx,ply,'o');hold on;
+% plot(plx,constr_param.m(2)*plx + constr_param.q(2),"red"); hold on;
+% plot(plx,constr_param.m(1)*plx + constr_param.q(1),"red"); hold on;
+% plot(zf(1),zf(2),"xr",'MarkerSize', 10, 'LineWidth', 2);daspect([1 1 1]);xlabel('x'); ylabel('y');title('traiettoria'),grid on
+% 
 % % % Annotation for parameters 
 % % ann1str = sprintf('Opt param:\nLINE SEARCH\n tkmax = %.1f \n beta = %.1f \n c = %.2f ',myoptions.ls_tkmax,myoptions.ls_beta, myoptions.ls_c); % annotation text
 % % ann1pos = [0.018 0.71 0.19 0.22]; % annotation position in figure coordinates
 % % ha1 = annotation('textbox',ann1pos,'string',ann1str);
 % % ha1.HorizontalAlignment = 'left';
 % % 
-%Annotation for constraints
-ann2str = sprintf('Constraints:\n Y < %.1f*X + %.f \n Y > %.1f*X + %.f ',constr_param.m(1),constr_param.q(1),constr_param.m(2),constr_param.q(2)); % annotation text
-ann2pos = [0.02 0.2 0.1 0.1]; % annotation position in figure coordinates
-ha2 = annotation('textbox',ann2pos,'string',ann2str);
-ha2.HorizontalAlignment = 'left';
-ha2.EdgeColor = 'red';
+% % %Annotation for constraints
+% % ann2str = sprintf('Constraints:\n Y < %.1f*X + %.f \n Y > %.1f*X + %.f ',constr_param.m(1),constr_param.q(1),constr_param.m(2),constr_param.q(2)); % annotation text
+% % ann2pos = [0.02 0.2 0.1 0.1]; % annotation position in figure coordinates
+% % ha2 = annotation('textbox',ann2pos,'string',ann2str);
+% % ha2.HorizontalAlignment = 'left';
+% % ha2.EdgeColor = 'red';
 % 
 % 
 % 
