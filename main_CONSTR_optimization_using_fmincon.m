@@ -63,8 +63,10 @@ U0              = [0.5*ones(2,1);
                    -0.8*ones(Np-18,1);
                    0.45*ones(9,1);
                    zeros(s_number,1)
-                   Ts;];   
-Tractor_traj(U0,z0,zf,Nu,Ns,parameters,Optimization_opt);
+                   Ts;]; 
+
+% Uncomment to visualize the trajectory intial guess
+% Tractor_traj(U0,z0,zf,Nu,Ns,parameters,Optimization_opt);
 %% Linear Constraints
 
 lb       =       [-deltasat*ones(Np,1);
@@ -79,7 +81,7 @@ ub        =        [deltasat*ones(Np,1);
 
 % Upper bound y<mx+q
 constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   = 10;
+constr_param.q(1)   = 8;
 
 % Lower bound y<mx+q
 constr_param.m(2)   =   0; % zero for standard case
@@ -88,6 +90,9 @@ constr_param.q(2)   =   0;
 
 zf(2) = constr_param.m(2)*zf(1) + constr_param.q(2); 
 constr_param.zf = zf;
+
+% velocity
+constr_param.lb_vel = 1;  
 
 %% Matlab fmincon options
 
@@ -136,17 +141,17 @@ tic ;
 [Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param)...
                                                     ,U0,[],[],[],[],lb,ub,...
                                                     @(U)constr_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param),options);
-% [Ustar,fval,exitflag,output] = nested_fmincon(z0,parameters,Optimization_opt,constr_param,U0,C,d,[],[],[],[],options);
 
 tempo_trascorso = toc;
+
+% Visualizza il tempo trascorso
+disp(['Tempo per calcolo: ', num2str(tempo_trascorso), ' secondi']);
 
 
 %% calcolo stati finali
 [zstar] = Tractor_traj(Ustar,z0,zf,Nu,Ns,parameters,Optimization_opt);
 % 
 N=length(zstar);
-
-
  
 Ts_p= Ustar(end,1)*Nu;
 Ts  = Ustar(end,1);
@@ -178,21 +183,19 @@ plot(plx,constr_param.m(1)*plx + constr_param.q(1),"red"); hold on;
 plot(zf(1),zf(2),"xr",'MarkerSize', 10, 'LineWidth', 2);daspect([1 1 1]);xlabel('x'); ylabel('y');title('traiettoria'),grid on
 %
 
-% % % Annotation for parameters 
-% % ann1str = sprintf('Opt param:\nLINE SEARCH\n tkmax = %.1f \n beta = %.1f \n c = %.2f ',myoptions.ls_tkmax,myoptions.ls_beta, myoptions.ls_c); % annotation text
-% % ann1pos = [0.018 0.71 0.19 0.22]; % annotation position in figure coordinates
-% % ha1 = annotation('textbox',ann1pos,'string',ann1str);
-% % ha1.HorizontalAlignment = 'left';
-% % 
+% Annotation for parameters 
+ann1str = sprintf('Tempo impiegato \n T_{end} = %.2f sec ',Ts*Ns); % annotation text
+ann1pos = [0.018 0.71 0.22 0.16]; % annotation position in figure coordinates
+ha1 = annotation('textbox',ann1pos,'string',ann1str);
+ha1.HorizontalAlignment = 'left';
+
+
 %Annotation for constraints
 ann2str = sprintf('Constraints:\n Y < %.1f*X + %.f \n Y > %.1f*X + %.f ',constr_param.m(1),constr_param.q(1),constr_param.m(2),constr_param.q(2)); % annotation text
 ann2pos = [0.02 0.2 0.1 0.1]; % annotation position in figure coordinates
 ha2 = annotation('textbox',ann2pos,'string',ann2str);
 ha2.HorizontalAlignment = 'left';
 ha2.EdgeColor = 'red';
-% 
-% 
-% 
-% % Visualizza il tempo trascorso
-% disp(['Tempo per calcolo: ', num2str(tempo_trascorso), ' secondi']);
+
+
 

@@ -16,6 +16,7 @@ q_down = constr_param.q(2);
 
 zf = constr_param.zf;
 
+lb_vel = constr_param.lb_vel;
 
 
 Np=ceil(Ns/Nu);
@@ -66,7 +67,7 @@ g= [(abs(e_x(end))-s(1,1));                %uguaglianza con slask variables sull
 
 %% Inequality constraints h(x)
 
-h = [(-z_sim(4,2:end)-vsat*ones(1,Ns))'; %not zero, otherwhise constraint would not be satisfied
+h = [(-z_sim(4,2:end)-lb_vel*vsat*ones(1,Ns))'; %lb_vel can be 0 or 1, is used to select trajectories with vel>0 only USER DEFINED
     (+z_sim(4,2:end)-vsat*ones(1,Ns))';
    
 % Parametrized constrained
