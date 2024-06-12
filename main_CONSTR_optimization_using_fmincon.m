@@ -2,7 +2,7 @@
 clear all
 close all
 clc
-
+warning('off', 'all');
 addpath(genpath('Models/'));
 addpath(genpath('Optimization_functions/'));
 
@@ -53,20 +53,9 @@ Optimization_opt.asat       = asat;
 Optimization_opt.Ns   = Ns;
 Optimization_opt.Nu   = Nu;
 
-%% Initial guess 2
-Np=ceil(Ns/Nu);
+Np=ceil((Ns+1)/Nu);
 s_number=4+1;
 
-U0              = [0.5*ones(2,1);
-                   -0.5*ones(Np-2,1); %delta
-                   0.3*ones(9,1);
-                   -0.8*ones(Np-18,1);
-                   0.45*ones(9,1);
-                   zeros(s_number,1)
-                   Ts;]; 
-
-% Uncomment to visualize the trajectory intial guess
-% Tractor_traj(U0,z0,zf,Nu,Ns,parameters,Optimization_opt);
 %% Linear Constraints
 
 lb       =       [-deltasat*ones(Np,1);
@@ -80,11 +69,11 @@ ub        =        [deltasat*ones(Np,1);
 % boundaries are expressed as y=mx+q
 
 % Upper bound y<mx+q
-constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   = 8;
+constr_param.m(1)   =  0.5; % zero for standard case
+constr_param.q(1)   = 5;
 
 % Lower bound y<mx+q
-constr_param.m(2)   =   0; % zero for standard case
+constr_param.m(2)   =   0.5; % zero for standard case
 constr_param.q(2)   =   0; 
 
 
@@ -92,7 +81,7 @@ zf(2) = constr_param.m(2)*zf(1) + constr_param.q(2);
 constr_param.zf = zf;
 
 % velocity
-constr_param.lb_vel = 1;  
+ 
 
 %% Matlab fmincon options
 
@@ -125,40 +114,70 @@ constr_param.lb_vel = 1;
 options = optimoptions(@fmincon,...
     'Algorithm','interior-point',...
     'FiniteDifferenceType','central',...
-    'ConstraintTolerance', 1e-6,... 
+    'ConstraintTolerance', 1e-5,... 
     'FunctionTolerance',1e-6,...
     'EnableFeasibilityMode', true,...
     'MaxFunctionEvaluations',10e5, ...
-    'MaxIterations',500,...
-    'StepTolerance',1e-10,...
-    'OptimalityTolerance',1e-6,...    
+    'MaxIterations',300,...
+    'StepTolerance',1e-12,...
+    'OptimalityTolerance',1e-12,...    
     'PlotFcn', {@plotfun_tractor_traj,@optimplotfval},... %,@optimplotfval
     'Display','iter-detailed');
 
 %% Run solver
-
 tic ;
+
+constr_param.lb_vel = 0; 
+
+ U0              = [0.5*ones(5,1);
+                   -0.5*ones(Np-5,1); 
+                   0.2*ones(floor(Np/2),1);
+                   -0.2*ones(ceil(Np/2),1);
+                   zeros(s_number,1)
+                   Ts;]; 
+ 
+
+
 [Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param)...
                                                     ,U0,[],[],[],[],lb,ub,...
                                                     @(U)constr_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param),options);
+
+disp(['Vincolo sul limite superiore è ', num2str(Ustar(end-1)) ]);
+s =    Ustar(2*Np+1:end-1,1);
+if Ustar(end-1)>1e-2 || s(1)+s(2)+s(3)+s(4)>0.5
+    constr_param.lb_vel = 1; 
+
+    U0              = [-0.4*ones(2,1);
+                   -0.4*ones(Np-2,1); 
+                   0.3*ones(9,1);
+                   -0.8*ones(Np-18,1);
+                   0.3*ones(9,1);
+                   zeros(s_number,1)
+                   Ts;]; 
+
+    
+    [Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param)...
+                                                    ,U0,[],[],[],[],lb,ub,...
+                                                    @(U)constr_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param),options);
+
+    disp(['Vincolo sul limite superiore è ', num2str(Ustar(end-1)) ]);
+end
 
 tempo_trascorso = toc;
 
 % Visualizza il tempo trascorso
 disp(['Tempo per calcolo: ', num2str(tempo_trascorso), ' secondi']);
 
-
 %% calcolo stati finali
+
 [zstar] = Tractor_traj(Ustar,z0,zf,Nu,Ns,parameters,Optimization_opt);
-% 
-N=length(zstar);
  
 Ts_p= Ustar(end,1)*Nu;
 Ts  = Ustar(end,1);
 
 % Visualizza il tempo trascorso
 disp(['Tempo finale Tend: ', num2str(Ts*Ns), ' secondi']);
- 
+disp(['Tempo di campionamento Ts: ', num2str(Ts), ' secondi']);
 
 plx =   zstar(1,:)';
 ply =   zstar(2,:)';
@@ -170,8 +189,8 @@ acc     =   Ustar(Np+1:end-s_number-1,1);
 
 
 figure(2)
-subplot(4,1,1),plot(0:Ts:(N-1)*Ts,ang),xlabel('Time (s)'),ylabel('psi'),grid on
-subplot(4,1,2),plot(0:Ts:(N-1)*Ts,vel),xlabel('Time (s)'),ylabel('velocità'),grid on
+subplot(4,1,1),plot(0:Ts:Ns*Ts,ang),xlabel('Time (s)'),ylabel('psi'),grid on
+subplot(4,1,2),plot(0:Ts:Ns*Ts,vel),xlabel('Time (s)'),ylabel('velocità'),grid on
 subplot(4,1,3);plot(0:Ts_p:(Np-1)*Ts_p,delta),xlabel('Time (s)'),ylabel('delta'),grid on
 subplot(4,1,4);plot(0:Ts_p:(Np-1)*Ts_p,acc),xlabel('Time (s)'),ylabel('acc'),grid on;
 
@@ -197,5 +216,9 @@ ha2 = annotation('textbox',ann2pos,'string',ann2str);
 ha2.HorizontalAlignment = 'left';
 ha2.EdgeColor = 'red';
 
+ fprintf('   xfinale    xtarget     error\n %f    %f    %f\n',plx(Ns,1),zf(1),abs(plx(end,1)-zf(1)));
+fprintf('   yfinale    ytarget     error\n %f    %f    %f\n',ply(Ns,1),zf(2),abs(ply(end,1)-zf(2)));
+fprintf('   psifinale  psitarget   error\n %f    %f    %f\n',ang(Ns,1),psif,abs(ang(end,1)-psif));
+fprintf('   vfinale    vtarget     error\n %f    %f    %f\n\n',vel(Ns,1),vf,abs(vel(end,1)-vf));
 
 

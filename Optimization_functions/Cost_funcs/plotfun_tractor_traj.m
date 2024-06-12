@@ -35,22 +35,20 @@ switch state
     case "iter"
         %% Build vector of inputs
         ztemp=z0;
-        Np=ceil(Ns/Nu);
+        Np=ceil((Ns+1)/Nu);
         
         u_in        =   [U(1:Np,1)';
                         U(Np+1:2*Np,1)'];
         
-        s =    U(2*Np+1:end,1);
+        s =    U(2*Np+1:end-1,1);
         Ts=     U(end,1); 
 
         %% Simulate trajectory
-        z_sim      =   zeros(4,Ns);
+        z_sim      =   zeros(4,Ns+1);
         z_sim(:,1) =   z0;
 
         for ind=2:Ns+1
-            if ceil(ind/Nu)<Np
-                u               =  u_in(:,ceil(ind/Nu));
-            end
+            u               =  u_in(:,ceil(ind/Nu));
             zdot               =   tractor_model(z_sim(:,ind-1),u,parameters);
             z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
     
@@ -85,7 +83,7 @@ switch state
         % plot(time_s,vel*3.6,time_s,maxvsat*3.6,time_s,minvsat*3.6),xlabel('Time (s)'),ylabel('velocità [km/h]')
         % plot(time_p,del,time_p,maxdeltasat,time_p,mindeltasat),xlabel('Time (s)'),ylabel('delta ')
         % plot(time_p,acc,time_p,maxasat,time_p,minasat),xlabel('Time (s)'),ylabel('acc [m/s]');
-
+        % 
 
 
     case "done"

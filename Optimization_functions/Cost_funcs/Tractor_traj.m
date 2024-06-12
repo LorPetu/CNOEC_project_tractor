@@ -1,25 +1,24 @@
 function [z_sim] = Tractor_traj(U,z0,zf,Nu,Ns,parameters,Optimization_opt)
 %% Build vector of inputs
 
-Np=ceil(Ns/Nu);
+Np=ceil((Ns+1)/Nu);
 
 u_in        =   [U(1:Np,1)';
                 U(Np+1:2*Np,1)'];
 
-s =    U(2*Np+1:end,1);
+s =    U(2*Np+1:end-1,1);
 Ts=     U(end,1);
-%disp(s);
+disp(s);
 %% Run simulation with FFD
 
-z_sim      =   zeros(4,Ns);
+z_sim      =   zeros(4,Ns+1);
 z_sim(:,1) =   z0;
 f_1 = 0;
 
 
   for ind=2:Ns+1
-    if ceil(ind/Nu)<Np
         u               =  u_in(:,ceil(ind/Nu));
-    end
+    
     zdot               =   tractor_model(z_sim(:,ind-1),u,parameters);
     z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
 
