@@ -1,39 +1,21 @@
 function stop = plotfun_tractor_traj(U,optimValues,state)
-persistent Ns Nu z0 parameters vsat asat deltasat % Retain these values throughout the optimization
+persistent Ns Nu z0 parameters constr_param vsat asat deltasat % Retain these values throughout the optimization
 stop = false;
 switch state
     case "init"
-        %% Run simulation with FFD
-        %% Build vector of inputs
-        Ns          =   50;                    % Simulation steps
+        constr_param= evalin('base', 'constr_param');
+        Nu = evalin('base', 'Nu');
+        Ns = evalin('base', 'Ns');
+        parameters = evalin('base', 'parameters');
+        z0 = evalin('base', 'z0');
 
-        Nu=2;  %ogni quanti istanti di simulazione viene calcolato u
-        %% Model Parameters
-
-        Lt        =   1.85;                  % Wheelbase (m)
-        Hti       =   pi/2;                 % Initial heading of the tractor (rad)
-        Htf       =   pi/2;                 % Final heading of the tractor (rad)
-        d         =   4.0;                  % Row width (m)
-        Li        =   2.5;                  % Wheelbase of implements
+        zf=constr_param.zf;
         
-        
-        parameters=[Lt;Hti;Htf;d;Li];
-        %% initial states
-        xt        =      0;                 % inertial X position (m)
-        yt        =      0;                 % inertial Y position (m)
-        psit      =      pi/2;              % yaw angle (rad)
-        vt        =      4/3.6;                     % body x velocity (m/s) 
-        
-        z0=[xt;yt;psit;vt];
-        
-        %%
-        vsat        =   20/3.6;                     % Input saturation
-        asat        =   1;                      % Cart position limits
-        deltasat    =   30*pi/180;
-       
-        
+      
     case "iter"
         %% Build vector of inputs
+        
+        zf=constr_param.zf;
         ztemp=z0;
         Np=ceil((Ns+1)/Nu);
         
@@ -55,30 +37,39 @@ switch state
         end
 
         %% Plot
-        ang     = z_sim(3,:);
-        vel     = z_sim(4,:);
-
-        maxvsat = vsat*ones(Ns+1);
-        minvsat = -vsat*ones(Ns+1);
-     
-        maxdeltasat = deltasat*ones(Np);
-        mindeltasat = -deltasat*ones(Np);
-       
-        maxasat = asat*ones(Np);
-        minasat = -asat*ones(Np);
-
-        del     = u_in(1,:);
-        acc     = u_in(2,:);
-        
+        % ang     = z_sim(3,:);
+        % vel     = z_sim(4,:);
+        % 
+        % maxvsat = vsat*ones(Ns+1);
+        % minvsat = -vsat*ones(Ns+1);
+        % 
+        % maxdeltasat = deltasat*ones(Np);
+        % mindeltasat = -deltasat*ones(Np);
+        % 
+        % maxasat = asat*ones(Np);
+        % minasat = -asat*ones(Np);
+        % 
+        % del     = u_in(1,:);
+        % acc     = u_in(2,:);
+        % 
         % 
         % plxf = zf(1,1);
         % plyf = zf(2,1);
         
+        
         time_s=linspace(0,Ts*Ns,Ns+1);
         time_p=linspace(0,Ts*Ns,Np);
-        plot(z_sim(1,:),z_sim(2,:)),daspect([1,1,1]),grid on,axis([-5 10 -2 12])
+        x_axis=linspace(-5,10,2);
+       
+        plot(z_sim(1,:),z_sim(2,:),...
+            x_axis,constr_param.m(2)*x_axis + constr_param.q(2),"green",...
+            x_axis,constr_param.m(1)*x_axis + constr_param.q(1),"green",...
+            zf(1),zf(2),"xr",'MarkerSize', 10),daspect([1,1,1]),grid on,axis([-5 10 -2 12])
         xlabel('x'), ylabel('y'),title(sprintf('Trajectory at k = %d',optimValues.iteration))
         
+
+
+
         % plot(time_s,ang),xlabel('Time (s)'),ylabel('psi'),
         % plot(time_s,vel*3.6,time_s,maxvsat*3.6,time_s,minvsat*3.6),xlabel('Time (s)'),ylabel('velocità [km/h]')
         % plot(time_p,del,time_p,maxdeltasat,time_p,mindeltasat),xlabel('Time (s)'),ylabel('delta ')

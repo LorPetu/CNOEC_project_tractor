@@ -70,7 +70,7 @@ ub        =        [deltasat*ones(Np,1);
 
 % Upper bound y<mx+q
 constr_param.m(1)   =  0.5; % zero for standard case
-constr_param.q(1)   = 5;
+constr_param.q(1)   = 6;
 
 % Lower bound y<mx+q
 constr_param.m(2)   =   0.5; % zero for standard case
@@ -118,8 +118,8 @@ options = optimoptions(@fmincon,...
     'FunctionTolerance',1e-6,...
     'EnableFeasibilityMode', true,...
     'MaxFunctionEvaluations',10e5, ...
-    'MaxIterations',300,...
-    'StepTolerance',1e-12,...
+    'MaxIterations',500,...
+    'StepTolerance',1e-5,...
     'OptimalityTolerance',1e-12,...    
     'PlotFcn', {@plotfun_tractor_traj,@optimplotfval},... %,@optimplotfval
     'Display','iter-detailed');
@@ -131,8 +131,8 @@ constr_param.lb_vel = 0;
 
  U0              = [0.5*ones(5,1);
                    -0.5*ones(Np-5,1); 
-                   0.2*ones(floor(Np/2),1);
-                   -0.2*ones(ceil(Np/2),1);
+                   0.1*ones(floor(Np/2),1);
+                   -0.1*ones(ceil(Np/2),1);
                    zeros(s_number,1)
                    Ts;]; 
  

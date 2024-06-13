@@ -56,7 +56,7 @@ delta_acc=u_in(2,2:end)-u_in(2,1:end-1);
 % delta_ey=e_y(2:end)-e_y(1:end-1);
 
 f = f+0*(delta_acc*delta_acc')+...
-    + 5e3*(s'*s)+1e4*Ts;
+    + 2.5e3*(s'*s)+1e4*Ts;
 
 %% Other attempts terms in cost function
     %+1e-1*(-(u_in(1,:)*u_in(1,:)'))...
