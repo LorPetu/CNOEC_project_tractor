@@ -11,50 +11,73 @@ addpath(genpath('Optimization_functions/'));
 
 %% Model Parameters
 
-Lt        =   1.85;                  % Wheelbase (m)
-Hti       =   pi/2;                 % Initial heading of the tractor (rad)
-Htf       =   pi/2;                 % Final heading of the tractor (rad)
+Lt        =   3;                  % Wheelbase (m)
+Li        =   2;                  % Wheelbase of implements
+Lh        =   0;                  % hook length
 d         =   4.0;                  % Row width (m)
-Li        =   2.5;                  % Wheelbase of implements
+
+parameters=[Lt;Li;Lh;d];
+
+%% Bounderies
+
+% Upper bound y<mx+q
+constr_param.m(1)   =  0.5; % zero for standard case
+constr_param.q(1)   = 20;
+
+% Lower bound y<mx+q
+constr_param.m(2)   =   0.5; % zero for standard case
+constr_param.q(2)   =   0; 
 
 
-parameters=[Lt;Hti;Htf;d;Li];
 
 %% initial states
-xt        =      0;                 % inertial X position (m)
-yt        =      0;                 % inertial Y position (m)
-psit      =      pi/2;              % yaw angle (rad)
-vt        =      4/3.6;                     % body x velocity (m/s) 
+psit      =    pi/2;              % yaw angle (rad)
+psii     =     psit;               % implement yaw angle (rad)
+vt        =    4/3.6;             % body x velocity (m/s) 
+vi       =   vt;               % implement body x velocity (m/s)
+xi       =   0;               % implemen inertial X position (m)
+yi       =   0;               % implement inertial Y position (m)
+xt        =  xi+Lh*cos(psit) +Li*cos(psii);                 % inertial X position (m)
+yt        =  yi+Lh*sin(psit) +Li*sin(psii);                 % inertial Y position (m)
 
-z0=[xt;yt;psit;vt];
+
+z0=[xt;yt;psit;vt;xi;yi;psii;vi];
+
+
 
 %% final state
-xf      =       xt+d; 
-yf      =       0;
-psif    =       -pi/2;
-vf      =       4/3.6;
+psitf      =    -pi/2;             % yaw angle (rad)
+psiif    =     psitf;              % implement yaw angle (rad)
+vtf       =    4/3.6;             % body x velocity (m/s) 
+vif      =   vt;                  % implement body x velocity (m/s)
+xif       =    xi+d;           % implemen inertial X position (m)
+yif      =    constr_param.m(2)*xif + constr_param.q(2);    % implement inertial Y position (m)
+xtf        =   xif+Lh*cos(psitf)+Li*cos(psiif);                  % inertial X position (m)
+ytf        =   yif+Lh*sin(psitf)+Li*sin(psiif);             % inertial Y position (m)
 
-zf      =       [xf;yf;psif;vf];
-
+zf      =    [xtf;ytf;psitf;vtf;xif;yif;psiif;vif];
+constr_param.zf = zf;
 %% Control problem parameters
 
-Ns          =   50;                    % Simulation steps
-Ts         =   0.25;             % initial guess for time step
-Nu=2;  %ogni quanti istanti di simulazione viene calcolato u
+Ns          =   75;                  % Simulation steps
+Ts         =   0.25;                 % initial guess for time step
+Nu=2;                                %ogni quanti istanti di simulazione viene calcolato u
 
-vsat        =   20/3.6;                     % Input saturation
-asat        =   1;                      % Cart position limits
+vsat        =   20/3.6;              % Input saturation
+asat        =   1;                   % Cart position limits
 deltasat    =   30*pi/180;
+delta_psi_sat = 90*pi/180;
+
 
 Optimization_opt.vsat       = vsat;
 Optimization_opt.deltasat   = deltasat;
 Optimization_opt.asat       = asat;
-
+Optimization_opt.delta_psi_sat=delta_psi_sat;
 Optimization_opt.Ns   = Ns;
 Optimization_opt.Nu   = Nu;
 
 Np=ceil((Ns+1)/Nu);
-s_number=4+1;
+s_number=8+1;
 
 %% Linear Constraints
 
@@ -64,52 +87,9 @@ lb       =       [-deltasat*ones(Np,1);
 
 ub        =        [deltasat*ones(Np,1);
                    asat*ones(Np,1)];
-
-%% Parametrized Constraint
-% boundaries are expressed as y=mx+q
-
-% Upper bound y<mx+q
-constr_param.m(1)   =  0.5; % zero for standard case
-constr_param.q(1)   = 6;
-
-% Lower bound y<mx+q
-constr_param.m(2)   =   0.5; % zero for standard case
-constr_param.q(2)   =   0; 
-
-
-zf(2) = constr_param.m(2)*zf(1) + constr_param.q(2); 
-constr_param.zf = zf;
-
-% velocity
  
 
 %% Matlab fmincon options
-
-   % Default properties:
-   %                  Algorithm: 'interior-point'
-   %         BarrierParamUpdate: 'monotone'
-   %        ConstraintTolerance: 1.0000e-06
-   %                    Display: 'final'
-   %      EnableFeasibilityMode: 0
-   %   FiniteDifferenceStepSize: 'sqrt(eps)'
-   %       FiniteDifferenceType: 'forward'
-   %       HessianApproximation: 'bfgs'
-   %                 HessianFcn: []6
-   %         HessianMultiplyFcn: []
-   %                HonorBounds: 1
-   %     MaxFunctionEvaluations: 3000
-   %              MaxIterations: 1000
-   %             ObjectiveLimit: -1.0000e+20
-   %        OptimalityTolerance: 1.0000e-06
-   %                  OutputFcn: []
-   %                    PlotFcn: []
-   %               ScaleProblem: 0
-   %  SpecifyConstraintGradient: 0
-   %   SpecifyObjectiveGradient: 0
-   %              StepTolerance: 1.0000e-10
-   %        SubproblemAlgorithm: 'factorization'
-   %                   TypicalX: 'ones(numberOfVariables,1)'
-   %                UseParallel: 0
 
 options = optimoptions(@fmincon,...
     'Algorithm','interior-point',...
@@ -119,7 +99,7 @@ options = optimoptions(@fmincon,...
     'EnableFeasibilityMode', true,...
     'MaxFunctionEvaluations',10e5, ...
     'MaxIterations',500,...
-    'StepTolerance',1e-5,...
+    'StepTolerance',1e-10,...
     'OptimalityTolerance',1e-12,...    
     'PlotFcn', {@plotfun_tractor_traj,@optimplotfval},... %,@optimplotfval
     'Display','iter-detailed');
@@ -127,7 +107,7 @@ options = optimoptions(@fmincon,...
 %% Run solver
 tic ;
 
-constr_param.lb_vel = 0; 
+constr_param.lb_vel = 1; 
 
  U0              = [0.5*ones(5,1);
                    -0.5*ones(Np-5,1); 
@@ -143,19 +123,20 @@ constr_param.lb_vel = 0;
                                                     @(U)constr_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param),options);
 
 disp(['Vincolo sul limite superiore è ', num2str(Ustar(end-1)) ]);
+
 s =    Ustar(2*Np+1:end-1,1);
-if Ustar(end-1)>1e-2 || s(1)+s(2)+s(3)+s(4)>0.5
+if s(9)>1e-2 || sqrt(s(1)^2+s(2)^2)>0.1 ||sqrt(s(5)^2+s(6)^2)>0.2 || s(3)>0.2 || s(7)>0.2 || s(4)>0.2 ||s(8)>0.2
+
     constr_param.lb_vel = 1; 
 
     U0              = [-0.4*ones(2,1);
                    -0.4*ones(Np-2,1); 
-                   0.3*ones(9,1);
-                   -0.8*ones(Np-18,1);
-                   0.3*ones(9,1);
+                   zeros(10,1);
+                   -0.7*ones(Np-30,1);
+                   0.5*ones(20,1);
                    zeros(s_number,1)
                    Ts;]; 
 
-    
     [Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param)...
                                                     ,U0,[],[],[],[],lb,ub,...
                                                     @(U)constr_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param),options);
@@ -187,20 +168,34 @@ vel =   zstar(4,:)';
 delta   =   Ustar(1:Np,1);
 acc     =   Ustar(Np+1:end-s_number-1,1);
 
+asse=linspace(-5,10,2);
 
 figure(2)
-subplot(4,1,1),plot(0:Ts:Ns*Ts,ang),xlabel('Time (s)'),ylabel('psi'),grid on
-subplot(4,1,2),plot(0:Ts:Ns*Ts,vel),xlabel('Time (s)'),ylabel('velocità'),grid on
-subplot(4,1,3);plot(0:Ts_p:(Np-1)*Ts_p,delta),xlabel('Time (s)'),ylabel('delta'),grid on
-subplot(4,1,4);plot(0:Ts_p:(Np-1)*Ts_p,acc),xlabel('Time (s)'),ylabel('acc'),grid on;
+subplot(4,1,1),plot(0:Ts:Ns*Ts,ang,'b'),xlabel('Time (s)'),ylabel('psi tractor'),grid on
+subplot(4,1,2),plot(0:Ts:Ns*Ts,vel,'b'),xlabel('Time (s)'),ylabel('velocità tractor'),grid on
+subplot(4,1,3),plot(0:Ts:Ns*Ts,zstar(7,:),'k'),xlabel('Time (s)'),ylabel('psi implement'),grid on
+subplot(4,1,4),plot(0:Ts:Ns*Ts,zstar(8,:),'k'),xlabel('Time (s)'),ylabel('velocità implement'),grid on
+
+figure(4)
+subplot(2,1,1);plot(0:Ts_p:(Np-1)*Ts_p,delta,'b'),xlabel('Time (s)'),ylabel('delta'),grid on
+subplot(2,1,2);plot(0:Ts_p:(Np-1)*Ts_p,acc,'b'),xlabel('Time (s)'),ylabel('acc'),grid on;
 
 
 figure(3)
-plot(plx,ply,'o');hold on;
-plot(plx,constr_param.m(2)*plx + constr_param.q(2),"red"); hold on;
-plot(plx,constr_param.m(1)*plx + constr_param.q(1),"red"); hold on;
-plot(zf(1),zf(2),"xr",'MarkerSize', 10, 'LineWidth', 2);daspect([1 1 1]);xlabel('x'); ylabel('y');title('traiettoria'),grid on
-%
+plot(plx,ply,'b','DisplayName', 'Tractor');hold on;
+plot(asse,constr_param.m(2)*asse + constr_param.q(2),"red",'DisplayName', 'Upper limit'); hold on;
+plot(asse,constr_param.m(1)*asse + constr_param.q(1),"red",'DisplayName', 'Lower limit'); hold on;
+plot(zstar(5,:),zstar(6,:),'k','DisplayName', 'Implement'); hold on
+plot(zf(5),zf(6),"xr",'MarkerSize', 10, 'LineWidth', 2,'DisplayName', 'Target point');
+daspect([1 1 1]);axis([-5 10 -5 10]);
+xlabel('x'); ylabel('y');title('traiettoria'),grid on
+legend('show');
+
+
+delta_psi=abs(zstar(3,:)-zstar(7,:));
+figure(5)
+plot(0:Ts:(Ns)*Ts,delta_psi)
+
 
 % Annotation for parameters 
 ann1str = sprintf('Tempo impiegato \n T_{end} = %.2f sec ',Ts*Ns); % annotation text
@@ -216,9 +211,12 @@ ha2 = annotation('textbox',ann2pos,'string',ann2str);
 ha2.HorizontalAlignment = 'left';
 ha2.EdgeColor = 'red';
 
- fprintf('   xfinale    xtarget     error\n %f    %f    %f\n',plx(Ns,1),zf(1),abs(plx(end,1)-zf(1)));
-fprintf('   yfinale    ytarget     error\n %f    %f    %f\n',ply(Ns,1),zf(2),abs(ply(end,1)-zf(2)));
-fprintf('   psifinale  psitarget   error\n %f    %f    %f\n',ang(Ns,1),psif,abs(ang(end,1)-psif));
-fprintf('   vfinale    vtarget     error\n %f    %f    %f\n\n',vel(Ns,1),vf,abs(vel(end,1)-vf));
-
+fprintf('   xt finale    xt target     error\n %f    %f    %f\n',plx(Ns,1),zf(1),abs(plx(end,1)-zf(1)));
+fprintf('   yt finale    yt target     error\n %f    %f    %f\n',ply(Ns,1),zf(2),abs(ply(end,1)-zf(2)));
+fprintf('   psit finale  psit target   error\n %f    %f    %f\n',ang(Ns,1)*180/pi,psitf*180/pi,abs(ang(end,1)-psitf)*180/pi);
+fprintf('   vt finale    vt target     error\n %f    %f    %f\n\n',vel(Ns,1),vtf,abs(vel(end,1)-vtf));
+fprintf('   xi finale    xi target     error\n %f    %f    %f\n',zstar(5,end),zf(5),abs(zstar(5,end)-zf(5)));
+fprintf('   yi finale    yi target     error\n %f    %f    %f\n',zstar(6,end),zf(6),abs(zstar(6,end)-zf(6)));
+fprintf('   psii finale  psii target   error\n %f    %f    %f\n',zstar(7,end)*180/pi,psiif*180/pi,abs(zstar(7,end)-psiif)*180/pi);
+fprintf('   vi finale    vi target     error\n %f    %f    %f\n\n',zstar(8,end),vif,abs(zstar(8,end)-vif));
 
