@@ -5,8 +5,7 @@ function [zdot] = Tractor_01_trail_model(z,u,parameters)
 %parameters
 Lt      =   parameters(1,1);                % wheelbase (m)
 Li      =   parameters(2,1);                % wheelbase of implement (m)
-Lh      =   parameters(3,1);                   % hook length
-d       =   parameters(4,1);                % row width (m)
+d       =   parameters(3,1);                % row width (m)
 
 %states
 

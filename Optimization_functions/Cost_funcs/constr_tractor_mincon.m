@@ -59,8 +59,8 @@ h = [(-z_sim(4,:)-lb_vel*vsat*ones(1,Ns+1))'; %lb_vel can be 0 or 1, is used to 
     (+z_sim(4,:)-vsat*ones(1,Ns+1))';
   
 % Parametrized constrained
-   (z_sim(2,:)-m_up*z_sim(1,:)-(q_up+s(9,1))*ones(1,Ns+1))'; % -y + m*x + q > 0 y < m*x+q
-   (z_sim(6,:)-m_up*z_sim(5,:)-(q_up+s(9,1))*ones(1,Ns+1))';
+   (z_sim(2,:)-m_up*z_sim(1,:)-(q_up)*ones(1,Ns+1))'; % -y + m*x + q > 0 y < m*x+q
+   (z_sim(6,:)-m_up*z_sim(5,:)-(q_up)*ones(1,Ns+1))';
    (-z_sim(6,:)+m_down*z_sim(5,:)+q_down*ones(1,Ns+1))'; % y - m*x - q > 0
    (delta_psi-delta_psi_sat)'];      %difference between the orientation of the 2 must be lower than a threshold
 

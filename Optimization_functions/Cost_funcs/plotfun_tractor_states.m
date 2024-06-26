@@ -1,5 +1,6 @@
-function stop = plotfun_tractor_traj(U,optimValues,state)
+function stop = plotfun_tractor_states(U,optimValues,state)
 persistent Ns Nu z0 parameters constr_param % Retain these values throughout the optimization
+global iterationCount;
 stop = false;
 switch state
     case "init"
@@ -11,10 +12,10 @@ switch state
 
         zf=constr_param.zf;
         
+        
       
     case "iter"
         %% Build vector of inputs
-        
         zf=constr_param.zf;
         ztemp=z0;
         Np=ceil((Ns+1)/Nu);
@@ -39,18 +40,21 @@ switch state
         end
 
         %% Plot
-              
+             
         time_s=linspace(0,Ts*Ns,Ns+1);
         time_p=linspace(0,Ts*Ns,Np);
         x_axis=linspace(-5,10,2);
        
+        subplot(3,2,1:4)
         plot(z_sim(1,:),z_sim(2,:),'b', ...
             z_sim(5,:),z_sim(6,:),'g',...
             x_axis,constr_param.m(2)*x_axis + constr_param.q(2),"r",...
             x_axis,constr_param.m(1)*x_axis + constr_param.q(1),"r",...
             zf(5),zf(6),"xr",'MarkerSize', 10),daspect([1,1,1]),grid on,%axis([-5 10 -2 12])
-        xlabel('x'), ylabel('y'),title(sprintf('Trajectory at k = %d\nTend= %f',optimValues.iteration, Tend))
-        
+            xlabel('x'), ylabel('y'),title(sprintf('Trajectory at k = %d\nTend= %f',optimValues.iteration, Tend))
+        subplot(3,2,5),plot(0:Ts:(Np-1)*Ts,u_in(1,:),'b'),xlabel('Time (s)'),ylabel('delta'),grid on
+        subplot(3,2,6),plot(0:Ts:(Np-1)*Ts,u_in(2,:),'b'),xlabel('Time (s)'),ylabel('acc'),grid on
+
     case "done"
       
 end
