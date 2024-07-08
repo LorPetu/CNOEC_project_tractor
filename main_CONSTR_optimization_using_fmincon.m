@@ -15,14 +15,14 @@ d         =   4.0;                  % Row width (m)
 
 parameters=[Lt;Li;d];
 
-%% Bounderies
+%% Boundaries
 
 % Upper bound y<mx+q
-constr_param.m(1)   =  0.5; % zero for standard case
-constr_param.q(1)   = 10;
+constr_param.m(1)   =  0; % zero for standard case
+constr_param.q(1)   = 15;
 
 % Lower bound y<mx+q
-constr_param.m(2)   =   0.5; % zero for standard case
+constr_param.m(2)   =   0; % zero for standard case
 constr_param.q(2)   =   0;
 
 
@@ -73,13 +73,12 @@ Optimization_opt.Ns   = Ns;
 Optimization_opt.Nu   = Nu;
 
 Np=ceil((Ns+1)/Nu);
-s_number=8;
+
 
 %% Linear Constraints
 
 lb       =       [-deltasat*ones(Np,1);
-                 -asat*ones(Np,1);
-                 zeros(s_number,1)];
+                 -asat*ones(Np,1)];
 
 ub        =        [deltasat*ones(Np,1);
                    asat*ones(Np,1)];
@@ -90,7 +89,7 @@ ub        =        [deltasat*ones(Np,1);
 options = optimoptions(@fmincon,...
     'Algorithm','interior-point',...
     'FiniteDifferenceType','central',...
-    'ConstraintTolerance', 1e-10,... 
+    'ConstraintTolerance', 1e-4,... 
     'FunctionTolerance',1e-12,...
     'EnableFeasibilityMode', true,...
     'MaxFunctionEvaluations',1e10, ...
@@ -110,7 +109,6 @@ constr_param.lb_vel = 0;
                    -0.5*ones(Np-8,1); 
                    0.2*ones(floor(Np/2),1);
                    -0.2*ones(ceil(Np/2),1);
-                   zeros(s_number,1)
                    Ts;]; 
 
 
@@ -121,7 +119,7 @@ constr_param.lb_vel = 0;
 disp(['Vincolo sul limite superiore è ', num2str(Ustar(end-1)) ]);
 %% eventuale seconda iterazione
 s =    Ustar(2*Np+1:end-1,1);
-if sqrt(s(1)^2+s(2)^2)>0.2 ||sqrt(s(5)^2+s(6)^2)>0.2 || s(3)>10*pi/180 || s(7)>10*pi/180 || s(4)>0.2 ||s(8)>0.2
+if exitflag.constrviolation >options.ConstraintTolerance
      constr_param.lb_vel = 1; 
 
     U0              = [-0.5*ones(12,1);
@@ -130,7 +128,6 @@ if sqrt(s(1)^2+s(2)^2)>0.2 ||sqrt(s(5)^2+s(6)^2)>0.2 || s(3)>10*pi/180 || s(7)>1
                    0.2*ones(10,1);
                    -0.7*ones(Np-27,1);
                    0.5*ones(17,1);
-                   zeros(s_number,1)
                    Ts;]; 
 
     [Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param)...
@@ -159,7 +156,7 @@ ang =   zstar(3,:)';
 vel =   zstar(4,:)';
 
 delta   =   Ustar(1:Np,1);
-acc     =   Ustar(Np+1:end-s_number-1,1);
+acc     =   Ustar(Np+1:end-1,1);
 
 asse=linspace(-5,10,2);
 

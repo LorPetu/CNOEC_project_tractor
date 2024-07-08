@@ -23,8 +23,6 @@ Np=ceil((Ns+1)/Nu);
 u_in        =   [U(1:Np,1)';
                 U(Np+1:2*Np,1)'];
 
-s =    U(2*Np+1:end-1,1);
-
 Ts=     U(end,1);
 
 %% Run simulation with FFD
@@ -33,34 +31,32 @@ zdot        =   zeros(8,1);
 z_sim      =   zeros(8,Ns+1);
 z_sim(:,1) =   z0;
 f=0;
+f1=0;
+f2=0;
 e_acc=zeros(1,Np);
 e_delta=zeros(1,Np);
+p           =   ones(size(zf));
+
+p(3)        = 5;
+p(7)        = p(3);
+Q           =   zeros(Ns,1);
+Q(end,1)    =   1;
 for ind=2:Ns+1
     
     u               =  u_in(:,ceil(ind/Nu));
     zdot               =   Tractor_01_trail_model(z_sim(:,ind-1),u,parameters);
     z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
 
-    %f=f+10*((z_sim(1:2, ind)-z_sim(1:2, ind-1))'*(z_sim(1:2, ind)-z_sim(1:2, ind-1)));
-    
-    e_acc(1,ind-1)=asat-abs(u(2));
-    e_delta(1,ind-1)=deltasat-abs(u(1));
+    f1=f1+Q(ind-1,1)*p'*abs(z_sim(:,ind)-zf);
 end 
 
-delta_delta=u_in(1,2:end)-u_in(1,1:end-1);
-delta_acc=u_in(2,2:end)-u_in(2,1:end-1);
+f2 = Ns*Ts;
 
-Q=ones(1,8);
-if lb_vel==0
-    Q(3)=3;         %per velocità positiva q=3
-    Q(7)=3;
-elseif lb_vel==1
-    Q=Q*1.3;
-end
-f = f +Q*s+80*Ts;   %  che va bene per v positva è =100
-%+ 0.001*(delta_acc*delta_acc')+ 0.001*(delta_delta*delta_delta');
+gamma =1;
+f = gamma*f1 + (1-gamma)*f2; 
+disp(["f1 = ", num2str(f1),"f2= ",num2str(f2)]);
 
-f=f*100;      %questo serve per scalare la funzione. Serve perchè fmincon non può settare i valori di linsearch e quindi con questo riusciamo a cambiarli (credo).
+f=f*50;      %questo serve per scalare la funzione. Serve perchè fmincon non può settare i valori di linsearch e quindi con questo riusciamo a cambiarli (credo).
                 %se è più alto la ricerca è più lenta ma più precisa es(50
                 %o 100)sembrano funzionare bene
 end
