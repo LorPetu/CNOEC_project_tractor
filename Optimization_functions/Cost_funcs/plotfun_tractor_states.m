@@ -1,5 +1,5 @@
 function stop = plotfun_tractor_states(U,optimValues,state)
-persistent Ns Nu z0 parameters constr_param % Retain these values throughout the optimization
+persistent Ns Nu z0 parameters constr_param MODE n_mode% Retain these values throughout the optimization
 global iterationCount;
 stop = false;
 switch state
@@ -9,7 +9,11 @@ switch state
         Ns = evalin('base', 'Ns');
         parameters = evalin('base', 'parameters');
         z0 = evalin('base', 'z0');
+        MODE =evalin('base','MODE');
 
+        n_mode = size(z0,1);
+
+        
         zf=constr_param.zf;
         
         
@@ -28,32 +32,54 @@ switch state
         
         Tend=Ts*Ns;
         %% Simulate trajectory
-        zdot=zeros(8,1);
-        z_sim      =   zeros(8,Ns+1);
+        zdot=zeros(n_mode,1);
+        z_sim      =   zeros(n_mode,Ns+1);
         z_sim(:,1) =   z0;
 
-        for ind=2:Ns+1
-            u               =  u_in(:,ceil(ind/Nu));
-            zdot               =   Tractor_01_trail_model(z_sim(:,ind-1),u,parameters);
-            z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
-    
-        end
-
-        %% Plot
-             
         time_s=linspace(0,Ts*Ns,Ns+1);
         time_p=linspace(0,Ts*Ns,Np);
         x_axis=linspace(-5,10,2);
-       
-        subplot(3,2,1:4)
-        plot(z_sim(1,:),z_sim(2,:),'b', ...
-            z_sim(5,:),z_sim(6,:),'g',...
-            x_axis,constr_param.m(2)*x_axis + constr_param.q(2),"r",...
-            x_axis,constr_param.m(1)*x_axis + constr_param.q(1),"r",...
-            zf(5),zf(6),"xr",'MarkerSize', 10),daspect([1,1,1]),grid on,%axis([-5 10 -2 12])
-            xlabel('x'), ylabel('y'),title(sprintf('Trajectory at k = %d\nTend= %f',optimValues.iteration, Tend))
-        subplot(3,2,5),plot(0:Ts:(Np-1)*Ts,u_in(1,:),'b'),xlabel('Time (s)'),ylabel('delta'),grid on
-        subplot(3,2,6),plot(0:Ts:(Np-1)*Ts,u_in(2,:),'b'),xlabel('Time (s)'),ylabel('acc'),grid on
+
+        if strcmp(MODE,'tractor')
+            for ind=2:Ns+1
+            u               =  u_in(:,ceil(ind/Nu));
+            zdot               =   tractor_model(z_sim(:,ind-1),u,parameters);
+            z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot; 
+
+            subplot(3,2,1:4)
+            plot(z_sim(1,:),z_sim(2,:),'b', ...
+                x_axis,constr_param.m(2)*x_axis + constr_param.q(2),"r",...
+                x_axis,constr_param.m(1)*x_axis + constr_param.q(1),"r",...
+                zf(1),zf(2),"xr",'MarkerSize', 10),daspect([1,1,1]),grid on,%axis([-5 10 -2 12])
+                xlabel('x'), ylabel('y'),title(sprintf('Trajectory at k = %d\nTend= %f',optimValues.iteration, Tend))
+            subplot(3,2,5),plot(0:Ts:(Np-1)*Ts,u_in(1,:),'b'),xlabel('Time (s)'),ylabel('delta'),grid on
+            subplot(3,2,6),plot(0:Ts:(Np-1)*Ts,u_in(2,:),'b'),xlabel('Time (s)'),ylabel('acc'),grid on
+        
+            end 
+
+        elseif strcmp(MODE,'tractor+implement')
+            for ind=2:Ns+1
+            u               =  u_in(:,ceil(ind/Nu));
+            zdot               =   Tractor_01_trail_model(z_sim(:,ind-1),u,parameters);
+            z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
+
+            %% Plot
+                    
+            subplot(3,2,1:4)
+            plot(z_sim(1,:),z_sim(2,:),'b', ...
+                z_sim(5,:),z_sim(6,:),'g',...
+                x_axis,constr_param.m(2)*x_axis + constr_param.q(2),"r",...
+                x_axis,constr_param.m(1)*x_axis + constr_param.q(1),"r",...
+                zf(5),zf(6),"xr",'MarkerSize', 10),daspect([1,1,1]),grid on,%axis([-5 10 -2 12])
+                xlabel('x'), ylabel('y'),title(sprintf('Trajectory at k = %d\nTend= %f',optimValues.iteration, Tend))
+            subplot(3,2,5),plot(0:Ts:(Np-1)*Ts,u_in(1,:),'b'),xlabel('Time (s)'),ylabel('delta'),grid on
+            subplot(3,2,6),plot(0:Ts:(Np-1)*Ts,u_in(2,:),'b'),xlabel('Time (s)'),ylabel('acc'),grid on
+        
+        
+            end 
+        
+        end
+        
 
     case "done"
       

@@ -1,4 +1,4 @@
-function [zdot] = Tractor_model(z,u,parameters)
+function [zdot] = tractor_model(z,u,parameters)
 %TRACTOR_MODEL Summary of this function goes here
 %% Read parameters, states and inputs
 
@@ -7,18 +7,15 @@ function [zdot] = Tractor_model(z,u,parameters)
 
 
 %parameters
-Lt      =   parameters(1,1);                 % Wheelbase (m)
-Hi      =   parameters(2,1);                 % Initial heading of the tractor (rad)
-Hf      =   parameters(3,1);                 % Final heading of the tractor (rad)
-d       =   parameters(4,1);                 % Row width (m)
-Li      =   parameters(5,1);
+Lt      =   parameters(1,1);                % wheelbase (m)
+d       =   parameters(3,1);                % row width (m)
 
 %states
 
-xt       =   z(1,1);            % inertial X position (m)
-yt       =   z(2,1);            % inertial Y position (m)
-psit     =   z(3,1);            % yaw angle (rad)
-vt       =   z(4,1);            % body x velocity (m/s) 
+xt       =   z(1,1);                % inertial X position (m)
+yt       =   z(2,1);                % inertial Y position (m)
+psit     =   z(3,1);                % yaw angle (rad)
+vt       =   z(4,1);                % body x velocity (m/s) 
 
 %inputs
 
