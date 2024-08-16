@@ -1,4 +1,4 @@
-function f = cost_tractor_mincon(U,z0,parameters,Optimization_opt, constr_param)
+function f = cost_tractor_implement_mincon(U,z0,parameters,Optimization_opt, constr_param)
 % Function that computes the trajectory of the tractor exiting from a row
 % and the constraint
 vsat = Optimization_opt.vsat;
@@ -27,8 +27,7 @@ Ts=     U(end,1);
 
 %% Run simulation with FFD
 
-n_mode = size(z0, 1);               % number of states according to the initial states vector
-
+n_mode = size(z0, 1);                % number of states according to the initial states input vector
 zdot        =   zeros(n_mode,1);
 z_sim      =   zeros(n_mode,Ns+1);
 z_sim(:,1) =   z0;
@@ -44,10 +43,9 @@ p(3)        = 5;
 Q           =   zeros(Ns,1);
 Q(end,1)    =   1;
 
-
     for ind=2:Ns+1
     u               =  u_in(:,ceil(ind/Nu));
-    zdot               =   tractor_model(z_sim(:,ind-1),u,parameters);
+    zdot               =   Tractor_01_trail_model(z_sim(:,ind-1),u,parameters);
     z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
 
     f1=f1+Q(ind-1,1)*p'*abs(z_sim(:,ind)-zf);

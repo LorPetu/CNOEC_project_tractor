@@ -7,7 +7,7 @@ addpath(genpath('Models/'));
 addpath(genpath('Optimization_functions/'));
 
 %% Select mode
-MODE = 'tractor'; % 'tractor_implement
+MODE = 'tractor'; % 'tractor+implement
 
 
 %% Model Parameters
@@ -126,11 +126,20 @@ U0              = [0.5*ones(n_mode,1);
                    -0.2*ones(ceil(Np/2),1);
                    Ts;]; 
 
+if strcmp(MODE,'tractor')
 
-
-[Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param,MODE)...
+    [Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param)...
                                                     ,U0,[],[],[],[],lb,ub,...
-                                                    @(U)constr_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param,MODE),options);
+                                                    @(U)constr_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param),options);
+elseif strcmp(MODE,'tractor+implement')
+    
+    [Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_implement_mincon(U,z0,parameters,Optimization_opt,constr_param)...
+                                                    ,U0,[],[],[],[],lb,ub,...
+                                                    @(U)constr_tractor_implement_mincon(U,z0,parameters,Optimization_opt,constr_param),options);
+    
+end
+
+
 
 disp(['Vincolo sul limite superiore è ', num2str(Ustar(end-1)) ]);
 %% eventuale seconda iterazione
