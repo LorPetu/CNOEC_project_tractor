@@ -24,7 +24,6 @@ switch state
         u_in        =   [U(1:Np,1)';
                         U(Np+1:2*Np,1)'];
         
-        s =    U(2*Np+1:end-1,1);
         Ts=     U(end,1); 
         
         Tend=Ts*Ns;

@@ -29,7 +29,7 @@ constr_param.q(2)   =   0;
 % '00' - Only tractor model
 % '01' - Tractor and implement model
 
-MODE    = '00';
+MODE    = '01';
 
 
 %% initial states
@@ -153,7 +153,7 @@ tempo_trascorso = toc;
 
 %% calcolo stati finali
 
-[zstar] = Tractor_traj(Ustar,z0,zf,Nu,Ns,parameters,Optimization_opt);
+[zstar] = Tractor_traj(Ustar,z0,Nu,Ns,parameters,MODE);
  
 Ts_p= Ustar(end,1)*Nu;
 Ts  = Ustar(end,1);
@@ -172,39 +172,49 @@ acc     =   Ustar(Np+1:end-1,1);
 
 asse=linspace(-5,10,2);
 
-delta_psi=abs(zstar(3,:)-zstar(7,:));
 
-figure(5)
-plot(0:Ts:(Ns)*Ts,delta_psi)
+
+
 
 
 figure(2)
 subplot(4,1,1),plot(0:Ts:Ns*Ts,ang,'b'),xlabel('Time (s)'),ylabel('psi tractor'),grid on
 subplot(4,1,2),plot(0:Ts:Ns*Ts,vel,'b'),xlabel('Time (s)'),ylabel('velocità tractor'),grid on
-subplot(4,1,3),plot(0:Ts:Ns*Ts,zstar(7,:),'g'),xlabel('Time (s)'),ylabel('psi implement'),grid on
-subplot(4,1,4),plot(0:Ts:Ns*Ts,zstar(8,:),'g'),xlabel('Time (s)'),ylabel('velocità implement'),grid on
 
 figure(4)
 subplot(2,1,1);plot(0:Ts_p:(Np-1)*Ts_p,delta,'b'),xlabel('Time (s)'),ylabel('delta'),grid on
 subplot(2,1,2);plot(0:Ts_p:(Np-1)*Ts_p,acc,'b'),xlabel('Time (s)'),ylabel('acc'),grid on;
 
-
 figure(3)
 plot(plx,ply,'b','DisplayName', 'Tractor');hold on;
 plot(asse,constr_param.m(2)*asse + constr_param.q(2),"red",'DisplayName', 'Upper limit'); hold on;
 plot(asse,constr_param.m(1)*asse + constr_param.q(1),"red",'DisplayName', 'Lower limit'); hold on;
-plot(zstar(5,:),zstar(6,:),'g','DisplayName', 'Implement'); hold on
-plot(zf(5),zf(6),"xr",'MarkerSize', 10, 'LineWidth', 2,'DisplayName', 'Target point');
+
 daspect([1 1 1]);%axis([-5 10 -5 10]);
 xlabel('x'); ylabel('y');title('traiettoria'),grid on
 legend('show');
 
+if strcmp(MODE,'01')
+    delta_psi=abs(zstar(3,:)-zstar(7,:));
 
+    figure(5)
+    plot(0:Ts:(Ns)*Ts,delta_psi)
+
+    figure(2)
+    subplot(4,1,3),plot(0:Ts:Ns*Ts,zstar(7,:),'g'),xlabel('Time (s)'),ylabel('psi implement'),grid on
+    subplot(4,1,4),plot(0:Ts:Ns*Ts,zstar(8,:),'g'),xlabel('Time (s)'),ylabel('velocità implement'),grid on
+
+    figure(3)
+    plot(zstar(5,:),zstar(6,:),'g','DisplayName', 'Implement'); hold on
+    plot(zf(5),zf(6),"xr",'MarkerSize', 10, 'LineWidth', 2,'DisplayName', 'Target point');
+
+
+end
 
 
 % Annotation for parameters 
 
-ann1str = sprintf('Tempo impiegato \n T_{end} = %.2f sec ',Ts*Ns); % annotation text
+ann1str = sprintf('Execution time \n T_{end} = %.2f sec ',Ts*Ns); % annotation text
 ann1pos = [0.018 0.71 0.22 0.16]; % annotation position in figure coordinates
 ha1 = annotation('textbox',ann1pos,'string',ann1str);
 ha1.HorizontalAlignment = 'left';
@@ -217,12 +227,12 @@ ha2 = annotation('textbox',ann2pos,'string',ann2str);
 ha2.HorizontalAlignment = 'left';
 ha2.EdgeColor = 'red';
 
-fprintf('\n    xt finale    xt target     error\n %f    %f    %f\n',plx(end,1),zf(1),abs(plx(end,1)-zf(1)));
-fprintf('   yt finale    yt target     error\n %f    %f    %f\n',ply(end,1),zf(2),abs(ply(end,1)-zf(2)));
-fprintf('   psit finale  psit target   error\n %f    %f    %f (=%f deg)\n',ang(end,1),psitf,abs(ang(end,1)-psitf),abs(ang(end,1)-psitf)*180/pi);
-fprintf('   vt finale    vt target     error\n %f    %f    %f\n\n',vel(end,1),vtf,abs(vel(end,1)-vtf));
-fprintf('   xi finale    xi target     error\n %f    %f    %f\n',zstar(5,end),zf(5),abs(zstar(5,end)-zf(5)));
-fprintf('   yi finale    yi target     error\n %f    %f    %f\n',zstar(6,end),zf(6),abs(zstar(6,end)-zf(6)));
-fprintf('   psii finale  psii target   error\n %f    %f    %f (=%f deg)\n',zstar(7,end),psiif,abs(zstar(7,end)-psiif),abs(zstar(7,end)-psiif)*180/pi);
-fprintf('   vi finale    vi target     error\n %f    %f    %f\n\n',zstar(8,end),vif,abs(zstar(8,end)-vif));
+% fprintf('\n    xt finale    xt target     error\n %f    %f    %f\n',plx(end,1),zf(1),abs(plx(end,1)-zf(1)));
+% fprintf('   yt finale    yt target     error\n %f    %f    %f\n',ply(end,1),zf(2),abs(ply(end,1)-zf(2)));
+% fprintf('   psit finale  psit target   error\n %f    %f    %f (=%f deg)\n',ang(end,1),psitf,abs(ang(end,1)-psitf),abs(ang(end,1)-psitf)*180/pi);
+% fprintf('   vt finale    vt target     error\n %f    %f    %f\n\n',vel(end,1),vtf,abs(vel(end,1)-vtf));
+% fprintf('   xi finale    xi target     error\n %f    %f    %f\n',zstar(5,end),zf(5),abs(zstar(5,end)-zf(5)));
+% fprintf('   yi finale    yi target     error\n %f    %f    %f\n',zstar(6,end),zf(6),abs(zstar(6,end)-zf(6)));
+% fprintf('   psii finale  psii target   error\n %f    %f    %f (=%f deg)\n',zstar(7,end),psiif,abs(zstar(7,end)-psiif),abs(zstar(7,end)-psiif)*180/pi);
+% fprintf('   vi finale    vi target     error\n %f    %f    %f\n\n',zstar(8,end),vif,abs(zstar(8,end)-vif));
 
