@@ -19,12 +19,17 @@ parameters=[Lt;Li;d];
 
 % Upper bound y<mx+q
 constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   = 15;
+constr_param.q(1)   = 10;
 
 % Lower bound y<mx+q
 constr_param.m(2)   =   0; % zero for standard case
 constr_param.q(2)   =   0;
 
+%% Mode selection
+% '00' - Only tractor model
+% '01' - Tractor and implement model
+
+MODE    = '00';
 
 
 %% initial states
@@ -34,11 +39,13 @@ vt        =    4/3.6;             % body x velocity (m/s)
 vi       =   vt;               % implement body x velocity (m/s)
 xi       =   0;               % implemen inertial X position (m)
 yi       =   0;               % implement inertial Y position (m)
-xt        =  xi +Li*cos(psii);                 % inertial X position (m)
-yt        =  yi +Li*sin(psii);                 % inertial Y position (m)
+xt        =  0;%xi +Li*cos(psii);                 % inertial X position (m)
+yt        =  0;%yi +Li*sin(psii);                 % inertial Y position (m)
 
-
-z0=[xt;yt;psit;vt;xi;yi;psii;vi];
+z0=[xt;yt;psit;vt];
+if strcmp(MODE,'01')
+    z0=[xi+Li*cos(psii);yi+Li*sin(psii);psit;vt;xi;yi;psii;vi];
+end
 
 
 
@@ -49,16 +56,21 @@ vtf       =    4/3.6;             % body x velocity (m/s)
 vif      =   vt;                  % implement body x velocity (m/s)
 xif       =    xi+d;           % implemen inertial X position (m)
 yif      =    constr_param.m(2)*xif + constr_param.q(2);    % implement inertial Y position (m)
-xtf        =   xif+Li*cos(psiif);                  % inertial X position (m)
-ytf        =   yif+Li*sin(psiif);             % inertial Y position (m)
+xtf        =   xt + d;                               % inertial X position (m)
+ytf        =   yt;                         % inertial Y position (m)
 
-zf      =    [xtf;ytf;psitf;vtf;xif;yif;psiif;vif];
+zf      =    [xtf;ytf;psitf;vtf];
+
+if strcmp(MODE,'01')
+    zf=[xif+Li*cos(psiif);yif+Li*sin(psiif);psit;vt;xi;yi;psii;vi];
+end
+
 constr_param.zf = zf;
 %% Control problem parameters
 
 Ns          =   75;                  % Simulation steps
-Ts         =   0.25;                 % initial guess for time step
-Nu=2;                                %ogni quanti istanti di simulazione viene calcolato u
+Ts          =   0.25;                % initial guess for time step
+Nu          =   2;                   %ogni quanti istanti di simulazione viene calcolato u
 
 vsat        =   20/3.6;              % Input saturation
 asat        =   1;                   % Cart position limits
@@ -112,9 +124,9 @@ constr_param.lb_vel = 0;
                    Ts;]; 
 
 
-[Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param)...
+[Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param,MODE)...
                                                     ,U0,[],[],[],[],lb,ub,...
-                                                    @(U)constr_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param),options);
+                                                    @(U)constr_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param,MODE),options);
 
 disp(['Vincolo sul limite superiore è ', num2str(Ustar(end-1)) ]);
 %% eventuale seconda iterazione
@@ -130,9 +142,9 @@ if exitflag.constrviolation >options.ConstraintTolerance
                    0.5*ones(17,1);
                    Ts;]; 
 
-    [Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param)...
+    [Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param,MODE)...
                                                     ,U0,[],[],[],[],lb,ub,...
-                                                    @(U)constr_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param),options);
+                                                    @(U)constr_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param,MODE),options);
 
     disp(['Vincolo sul limite superiore è ', num2str(Ustar(end-1)) ]);
 end

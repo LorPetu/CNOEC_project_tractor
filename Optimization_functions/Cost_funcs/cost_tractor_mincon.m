@@ -1,4 +1,4 @@
-function f = cost_tractor_mincon(U,z0,parameters,Optimization_opt, constr_param)
+function f = cost_tractor_mincon(U,z0,parameters,Optimization_opt, constr_param, MODE)
 % Function that computes the trajectory of the tractor exiting from a row
 % and the constraint
 vsat = Optimization_opt.vsat;
@@ -27,24 +27,26 @@ Ts=     U(end,1);
 
 %% Run simulation with FFD
 
-zdot        =   zeros(8,1);
-z_sim      =   zeros(8,Ns+1);
-z_sim(:,1) =   z0;
-f=0;
-f1=0;
-f2=0;
-e_acc=zeros(1,Np);
-e_delta=zeros(1,Np);
+n_mode      = size(z0,1);
+
+zdot        =   zeros(n_mode,1);
+z_sim       =   zeros(n_mode,Ns+1);
+z_sim(:,1)  =   z0;
+f           =   0;
+f1          =   0;
+f2          =   0;
 p           =   ones(size(zf));
 
 p(3)        = 5;
-p(7)        = p(3);
+%p(7)        = p(3);
 Q           =   zeros(Ns,1);
 Q(end,1)    =   1;
+Tractor_model_used = str2func(['Tractor_',MODE, '_trail_model']);
+
 for ind=2:Ns+1
     
     u               =  u_in(:,ceil(ind/Nu));
-    zdot               =   Tractor_01_trail_model(z_sim(:,ind-1),u,parameters);
+    zdot               =   Tractor_model_used(z_sim(:,ind-1),u,parameters);
     z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
 
     f1=f1+Q(ind-1,1)*p'*abs(z_sim(:,ind)-zf);
@@ -54,7 +56,7 @@ f2 = Ns*Ts;
 
 gamma =1;
 f = gamma*f1 + (1-gamma)*f2; 
-disp(["f1 = ", num2str(f1),"f2= ",num2str(f2)]);
+%disp(["f1 = ", num2str(f1),"f2= ",num2str(f2)]);
 
 f=f*50;      %questo serve per scalare la funzione. Serve perchè fmincon non può settare i valori di linsearch e quindi con questo riusciamo a cambiarli (credo).
                 %se è più alto la ricerca è più lenta ma più precisa es(50
