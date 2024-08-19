@@ -18,51 +18,60 @@ parameters=[Lt;Li;d];
 %% Boundaries
 
 % Upper bound y<mx+q
-constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   = 10;
+constr_param.m(1)   =  0.5; % zero for standard case
+constr_param.q(1)   = 8;
 
 % Lower bound y<mx+q
-constr_param.m(2)   =   0; % zero for standard case
+constr_param.m(2)   =   0.5; % zero for standard case
 constr_param.q(2)   =   0;
 
 %% Mode selection
 % '00' - Only tractor model
 % '01' - Tractor and implement model
 
-MODE    = '01';
+MODE    = '00';
 
 
 %% initial states
-psit      =    pi/2;              % yaw angle (rad)
-psii     =     psit;               % implement yaw angle (rad)
-vt        =    4/3.6;             % body x velocity (m/s) 
-vi       =   vt;               % implement body x velocity (m/s)
-xi       =   0;               % implemen inertial X position (m)
-yi       =   0;               % implement inertial Y position (m)
-xt        =  0;%xi +Li*cos(psii);                 % inertial X position (m)
-yt        =  0;%yi +Li*sin(psii);                 % inertial Y position (m)
+% Tractor
+xt      =  0;                   % inertial X position (m)
+yt      =  0;                   % inertial Y position (m)
+psit    =    pi/2;              % yaw angle (rad)
+vt      =    4/3.6;             % body x velocity (m/s) 
 
-z0=[xt;yt;psit;vt];
+% Implement 
+xi      =   0;                  % implement inertial X position (m)
+yi      =   0;                  % implement inertial Y position (m)
+psii    =   psit;               % implement yaw angle (rad)
+vi      =   vt;                 % implement body x velocity (m/s)
+
+z0      =   [xt;yt;psit;vt];
+
 if strcmp(MODE,'01')
+ 
     z0=[xi+Li*cos(psii);yi+Li*sin(psii);psit;vt;xi;yi;psii;vi];
 end
 
 
 
 %% final state
-psitf      =    -pi/2;             % yaw angle (rad)
-psiif    =     psitf;              % implement yaw angle (rad)
-vtf       =    4/3.6;             % body x velocity (m/s) 
-vif      =   vt;                  % implement body x velocity (m/s)
-xif       =    xi+d;           % implemen inertial X position (m)
-yif      =    constr_param.m(2)*xif + constr_param.q(2);    % implement inertial Y position (m)
-xtf        =   xt + d;                               % inertial X position (m)
-ytf        =   constr_param.m(2)*xtf + constr_param.q(2);                         % inertial Y position (m)
+% Tractor
+xtf     =   xt + d;                                         % inertial X position (m)
+ytf     =   constr_param.m(2)*xtf + constr_param.q(2);      % inertial Y position (m)
+psitf   =   -pi/2;                                          % yaw angle (rad)
+vtf     =   4/3.6;                                          % body x velocity (m/s) 
+
+% Implement
+xif     =    xi+d;                                          % implement inertial X position (m)
+yif     =    constr_param.m(2)*xif + constr_param.q(2);     % implement inertial Y position (m)
+psiif   =    psitf;                                         % implement yaw angle (rad)
+vif     =    vt;                                            % implement body x velocity (m/s)
 
 zf      =    [xtf;ytf;psitf;vtf];
 
 if strcmp(MODE,'01')
-    zf=[xif+Li*cos(psiif);yif+Li*sin(psiif);psit;vt;xif;yif;psiif;vif];
+
+     zf=[xif+Li*cos(psiif); yif+Li*sin(psiif); psitf;vtf;xif;yif;psiif;vif];
 end
 
 constr_param.zf = zf;
