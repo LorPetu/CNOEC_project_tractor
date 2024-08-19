@@ -40,13 +40,13 @@ n_mode      = size(z0,1);
 
 zdot        =   zeros(n_mode,1);
 z_sim       =   zeros(n_mode,Ns+1);
-z_sim(:,1) =   z0;
+z_sim(:,1)  =   z0;
 
 Tractor_model_used = str2func(['Tractor_',MODE, '_trail_model']);
 for ind=2:Ns+1
-    u               =  u_in(:,ceil(ind/Nu));
-    zdot               =   Tractor_model_used(z_sim(:,ind-1),u,parameters);
-    z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
+    u                   =   u_in(:,ceil(ind/Nu));
+    zdot                =   Tractor_model_used(z_sim(:,ind-1),u,parameters);
+    z_sim(:,ind)        =   z_sim(:,ind-1)+Ts*zdot;
 
 end 
 
@@ -92,8 +92,8 @@ else
         (+z_sim(4,:)-vsat*ones(1,Ns+1))';
   
         % Parametrized boundaries constrained
-        (z_sim(2,:)-m_up*z_sim(1,:)-(q_up)*ones(1,Ns+1))'; % y < m*x+q --> y - m*x - q  <=  0 
-        (z_sim(6,:)-m_up*z_sim(5,:)-(q_up)*ones(1,Ns+1))'; % y < m*x+q --> y - m*x - q  <=  0 
+        (z_sim(2,:)-m_up*z_sim(1,:)-q_up*ones(1,Ns+1))'; % y < m*x+q --> y - m*x - q  <=  0 
+        (z_sim(6,:)-m_up*z_sim(5,:)-q_up*ones(1,Ns+1))'; % y < m*x+q --> y - m*x - q  <=  0 
         (-z_sim(6,:)+m_down*z_sim(5,:)+q_down*ones(1,Ns+1))'; % y > m*x+q --> -y + m*x + q <=  0 ONLY FOR THE IMPLEMENT
         
         % Final states tolerances

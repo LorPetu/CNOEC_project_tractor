@@ -50,7 +50,9 @@ f2          =   0;
 p           =   ones(size(zf));
 
 p(3)        = 5;
-%p(7)        = p(3);
+if strcmp(MODE,'01')
+    p(7)        = p(3);
+end
 Q           =   zeros(Ns,1);
 Q(end,1)    =   1;
 Tractor_model_used = str2func(['Tractor_',MODE, '_trail_model']);

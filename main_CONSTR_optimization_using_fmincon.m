@@ -19,7 +19,7 @@ parameters=[Lt;Li;d];
 
 % Upper bound y<mx+q
 constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   = 12;
+constr_param.q(1)   = 10;
 
 % Lower bound y<mx+q
 constr_param.m(2)   =   0; % zero for standard case
@@ -29,7 +29,7 @@ constr_param.q(2)   =   0;
 % '00' - Only tractor model
 % '01' - Tractor and implement model
 
-MODE    = '00';
+MODE    = '01';
 
 
 %% initial states
@@ -57,12 +57,12 @@ vif      =   vt;                  % implement body x velocity (m/s)
 xif       =    xi+d;           % implemen inertial X position (m)
 yif      =    constr_param.m(2)*xif + constr_param.q(2);    % implement inertial Y position (m)
 xtf        =   xt + d;                               % inertial X position (m)
-ytf        =   yt;                         % inertial Y position (m)
+ytf        =   constr_param.m(2)*xtf + constr_param.q(2);                         % inertial Y position (m)
 
 zf      =    [xtf;ytf;psitf;vtf];
 
 if strcmp(MODE,'01')
-    zf=[xif+Li*cos(psiif);yif+Li*sin(psiif);psit;vt;xi;yi;psii;vi];
+    zf=[xif+Li*cos(psiif);yif+Li*sin(psiif);psit;vt;xif;yif;psiif;vif];
 end
 
 constr_param.zf = zf;
