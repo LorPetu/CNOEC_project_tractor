@@ -1,6 +1,18 @@
 function f = cost_tractor_mincon(U,z0,parameters,Optimization_opt, constr_param, MODE)
-% Function that computes the trajectory of the tractor exiting from a row
-% and the constraint
+% COST_TRACTOR_MINCON retrieves the cost function of the non linear problem
+% in the form  to be given as input to the fmincon matlab solver
+%   INPUTS:
+%       - U                 =
+%       - z0                =
+%       - parameters        = 
+%       - optimization_opt  = 
+%       - constr_param      =
+%       - MODE              = 
+%   OUTPUTS:
+%       - h                 = nonlinear inequality constraints
+%       - g                 = nonlinear equality constraints
+
+
 vsat = Optimization_opt.vsat;
 deltasat = Optimization_opt.deltasat;
 asat = Optimization_opt.asat;

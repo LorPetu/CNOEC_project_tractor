@@ -1,12 +1,22 @@
-function [h, g] = constr_tractor_mincon(U,z0,parameters,Optimization_opt, constr_param,MODE)
-% Function that computes the trajectory of the tractor exiting from a row
-% and the constraint
+function [h, g] = constr_tractor_mincon(U,z0,parameters,optimization_opt, constr_param,MODE)
+% CONSTR_TRACTOR_MINCON retrieves the constraints of the non linear problem
+% in the form g(x) = 0 and h(x)>=0 to be given as input to the fmincon matlab solver
+%   INPUTS:
+%       - U                 =
+%       - z0                =
+%       - parameters        = 
+%       - optimization_opt  = 
+%       - constr_param      =
+%       - MODE              = 
+%   OUTPUTS:
+%       - h                 = nonlinear inequality constraints
+%       - g                 = nonlinear equality constraints
 
-vsat = Optimization_opt.vsat;
-delta_psi_sat = Optimization_opt.delta_psi_sat;
+vsat = optimization_opt.vsat;
+delta_psi_sat = optimization_opt.delta_psi_sat;
 
-Ns = Optimization_opt.Ns;
-Nu=Optimization_opt.Nu;
+Ns = optimization_opt.Ns;
+Nu=optimization_opt.Nu;
 
 m_up= constr_param.m(1);
 m_down= constr_param.m(2);
@@ -51,14 +61,24 @@ lim = [0.05,0.05,5*pi/180,0.5/3.6,0.05,0.05,5*pi/180,0.5/3.6]';
 
 lim = lim(1:n_mode);
 
+% ## fmincon info ##
+% non linear inequalities constraints are specified in the form h(x)<=0
+
 % Constraints for mode 00
 if strcmp(MODE,'00')
     
-    h = [(-z_sim(4,:)-lb_vel*vsat*ones(1,Ns+1))'; %lb_vel can be 0 or 1, is used to select trajectories with vel>0 only USER DEFINED
+    h = [
+        % Velocity saturation
+        (-z_sim(4,:)-lb_vel*vsat*ones(1,Ns+1))'; %lb_vel can be 0 or 1, is used to select trajectories with vel>0 only USER DEFINED
         (+z_sim(4,:)-vsat*ones(1,Ns+1))';
-        (z_sim(2,:)-m_up*z_sim(1,:)-(q_up)*ones(1,Ns+1))'; % -y + m*x + q > 0 y < m*x+q
-        (-z_sim(2,:)+m_down*z_sim(1,:)+q_down*ones(1,Ns+1))'; % y - m*x - q > 0
-        (abs(z_sim(:,end)-zf)-lim)];
+
+        % Parametrized boundaries constraints
+        (z_sim(2,:)-m_up*z_sim(1,:)-(q_up)*ones(1,Ns+1))';      % y < m*x+q --> y - m*x - q  <=  0 
+        (-z_sim(2,:)+m_down*z_sim(1,:)+q_down*ones(1,Ns+1))';   % y > m*x+q --> -y + m*x + q <=  0 
+
+        % Final states tolerances
+        (abs(z_sim(:,end)-zf)-lim)
+        ];
 
 
 % Constraints for mode 01
@@ -66,16 +86,20 @@ else
 
     delta_psi=abs(z_sim(3,:)-z_sim(7,:));
 
-    h = [(-z_sim(4,:)-lb_vel*vsat*ones(1,Ns+1))'; %lb_vel can be 0 or 1, is used to select trajectories with vel>0 only USER DEFINED
-    (+z_sim(4,:)-vsat*ones(1,Ns+1))';
+    h = [
+        % Velocity saturation
+        (-z_sim(4,:)-lb_vel*vsat*ones(1,Ns+1))'; %lb_vel can be 0 or 1, is used to select trajectories with vel>0 only USER DEFINED
+        (+z_sim(4,:)-vsat*ones(1,Ns+1))';
   
-% Parametrized constrained
-    (z_sim(2,:)-m_up*z_sim(1,:)-(q_up)*ones(1,Ns+1))'; % -y + m*x + q > 0 y < m*x+q
-    (z_sim(6,:)-m_up*z_sim(5,:)-(q_up)*ones(1,Ns+1))';
-    (-z_sim(6,:)+m_down*z_sim(5,:)+q_down*ones(1,Ns+1))'; % y - m*x - q > 0
-% Final position tolerances
-    (abs(z_sim(:,end)-zf)-lim);
-    (delta_psi-delta_psi_sat)'];      %difference between the orientation of the 2 must be lower than a threshold
+        % Parametrized boundaries constrained
+        (z_sim(2,:)-m_up*z_sim(1,:)-(q_up)*ones(1,Ns+1))'; % y < m*x+q --> y - m*x - q  <=  0 
+        (z_sim(6,:)-m_up*z_sim(5,:)-(q_up)*ones(1,Ns+1))'; % y < m*x+q --> y - m*x - q  <=  0 
+        (-z_sim(6,:)+m_down*z_sim(5,:)+q_down*ones(1,Ns+1))'; % y > m*x+q --> -y + m*x + q <=  0 ONLY FOR THE IMPLEMENT
+        
+        % Final states tolerances
+        (abs(z_sim(:,end)-zf)-lim);
+        (delta_psi-delta_psi_sat)'  %difference between the orientation of the 2 must be lower than a threshold
+        ];     
 
 end
 
