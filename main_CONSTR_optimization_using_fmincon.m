@@ -19,7 +19,7 @@ parameters=[Lt;Li;d];
 
 % Upper bound y<mx+q
 constr_param.m(1)   =  0.5; % zero for standard case
-constr_param.q(1)   = 8;
+constr_param.q(1)   = 12;
 
 % Lower bound y<mx+q
 constr_param.m(2)   =   0.5; % zero for standard case
@@ -29,7 +29,7 @@ constr_param.q(2)   =   0;
 % '00' - Only tractor model
 % '01' - Tractor and implement model
 
-MODE    = '00';
+MODE    = '01';
 
 
 %% initial states

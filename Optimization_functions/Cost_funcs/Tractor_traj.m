@@ -22,9 +22,13 @@ function [z_sim] = Tractor_traj(U,z0,Nu,Ns,parameters,MODE)
     
     for ind=2:Ns+1
         u               =  u_in(:,ceil(ind/Nu));
-        
-        zdot               =   Tractor_model_used(z_sim(:,ind-1),u,parameters);
-        z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
+        % FFD
+        %zdot                =   Tractor_model_used(z_sim(:,ind-1),u,parameters);
+        %z_sim(:,ind)        =   z_sim(:,ind-1)+Ts*zdot;
+    
+        % RK2
+        z_prime_rk2         =   z_sim(:,ind-1)+Ts/2*Tractor_model_used(z_sim(:,ind-1),u,parameters);
+        z_sim(:,ind)        =   z_sim(:,ind-1)+Ts*Tractor_model_used(z_prime_rk2,u,parameters);
     
     end
 

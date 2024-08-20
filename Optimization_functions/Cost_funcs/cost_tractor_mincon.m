@@ -60,15 +60,20 @@ Tractor_model_used = str2func(['Tractor_',MODE, '_trail_model']);
 for ind=2:Ns+1
     
     u               =  u_in(:,ceil(ind/Nu));
-    zdot               =   Tractor_model_used(z_sim(:,ind-1),u,parameters);
-    z_sim(:,ind)       =   z_sim(:,ind-1)+Ts*zdot;
+    % FFD
+    %zdot                =   Tractor_model_used(z_sim(:,ind-1),u,parameters);
+    %z_sim(:,ind)        =   z_sim(:,ind-1)+Ts*zdot;
+
+    % RK2
+    z_prime_rk2         =   z_sim(:,ind-1)+Ts/2*Tractor_model_used(z_sim(:,ind-1),u,parameters);
+    z_sim(:,ind)        =   z_sim(:,ind-1)+Ts*Tractor_model_used(z_prime_rk2,u,parameters);
 
     f1=f1+Q(ind-1,1)*p'*abs(z_sim(:,ind)-zf);
 end 
 
 f2 = Ns*Ts;
 
-gamma =1;
+gamma =0.25;
 f = gamma*f1 + (1-gamma)*f2; 
 %disp(["f1 = ", num2str(f1),"f2= ",num2str(f2)]);
 
