@@ -86,12 +86,8 @@ asat        =   1;                   % Cart position limits
 deltasat    =   30*pi/180;
 delta_psi_sat = 90*pi/180;
 
-Optimization_opt.vsat       = vsat;
-Optimization_opt.deltasat   = deltasat;
-Optimization_opt.asat       = asat;
-Optimization_opt.delta_psi_sat=delta_psi_sat;
-Optimization_opt.Ns   = Ns;
-Optimization_opt.Nu   = Nu;
+constr_param.vsat           =   vsat;
+constr_param.delta_psi_sat  =   delta_psi_sat;
 
 Np=ceil((Ns+1)/Nu);
 
@@ -133,9 +129,9 @@ constr_param.lb_vel = 0;
                    Ts;]; 
 
 
-[Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param,MODE)...
+[Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,Nu,Ns,parameters,constr_param,MODE)...
                                                     ,U0,[],[],[],[],lb,ub,...
-                                                    @(U)constr_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param,MODE),options);
+                                                    @(U)constr_tractor_mincon(U,z0,Nu,Ns,parameters,constr_param,MODE),options);
 
 disp(['Vincolo sul limite superiore è ', num2str(Ustar(end-1)) ]);
 %% eventuale seconda iterazione
@@ -151,9 +147,9 @@ if exitflag.constrviolation >options.ConstraintTolerance
                    0.5*ones(17,1);
                    Ts;]; 
 
-    [Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param,MODE)...
+    [Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,Nu,Ns,parameters,constr_param,MODE)...
                                                     ,U0,[],[],[],[],lb,ub,...
-                                                    @(U)constr_tractor_mincon(U,z0,parameters,Optimization_opt,constr_param,MODE),options);
+                                                    @(U)constr_tractor_mincon(U,z0,Nu,Ns,parameters,constr_param,MODE),options);
 
     disp(['Vincolo sul limite superiore è ', num2str(Ustar(end-1)) ]);
 end

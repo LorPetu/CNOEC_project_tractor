@@ -1,4 +1,4 @@
-function [h, g] = constr_tractor_mincon(U,z0,parameters,optimization_opt, constr_param,MODE)
+function [h, g] = constr_tractor_mincon(U,z0,Nu,Ns,parameters, constr_param,MODE)
 % CONSTR_TRACTOR_MINCON retrieves the constraints of the non linear problem
 % in the form g(x) = 0 and h(x)>=0 to be given as input to the fmincon matlab solver
 %   INPUTS:
@@ -12,11 +12,8 @@ function [h, g] = constr_tractor_mincon(U,z0,parameters,optimization_opt, constr
 %       - h                 = nonlinear inequality constraints
 %       - g                 = nonlinear equality constraints
 
-vsat = optimization_opt.vsat;
-delta_psi_sat = optimization_opt.delta_psi_sat;
-
-Ns = optimization_opt.Ns;
-Nu=optimization_opt.Nu;
+vsat = constr_param.vsat;
+delta_psi_sat = constr_param.delta_psi_sat;
 
 m_up= constr_param.m(1);
 m_down= constr_param.m(2);

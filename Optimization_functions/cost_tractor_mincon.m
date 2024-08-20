@@ -1,4 +1,4 @@
-function f = cost_tractor_mincon(U,z0,parameters,Optimization_opt, constr_param, MODE)
+function f = cost_tractor_mincon(U,z0,Nu,Ns,parameters, constr_param, MODE)
 % COST_TRACTOR_MINCON retrieves the cost function of the non linear problem
 % in the form  to be given as input to the fmincon matlab solver
 %   INPUTS:
@@ -12,23 +12,7 @@ function f = cost_tractor_mincon(U,z0,parameters,Optimization_opt, constr_param,
 %       - h                 = nonlinear inequality constraints
 %       - g                 = nonlinear equality constraints
 
-
-vsat = Optimization_opt.vsat;
-deltasat = Optimization_opt.deltasat;
-asat = Optimization_opt.asat;
-
-Ns = Optimization_opt.Ns;
-Nu=Optimization_opt.Nu;
-
-m_up= constr_param.m(1);
-m_down= constr_param.m(2);
-q_up = constr_param.q(1);
-q_down = constr_param.q(2);
-
 zf = constr_param.zf;
-
-lb_vel=constr_param.lb_vel;
-
 
 Np=ceil((Ns+1)/Nu);
 
@@ -77,7 +61,7 @@ gamma =0.25;
 f = gamma*f1 + (1-gamma)*f2; 
 %disp(["f1 = ", num2str(f1),"f2= ",num2str(f2)]);
 
-f=f*50;      %questo serve per scalare la funzione. Serve perchè fmincon non può settare i valori di linsearch e quindi con questo riusciamo a cambiarli (credo).
+f=f*10;      %questo serve per scalare la funzione. Serve perchè fmincon non può settare i valori di linsearch e quindi con questo riusciamo a cambiarli (credo).
                 %se è più alto la ricerca è più lenta ma più precisa es(50
                 %o 100)sembrano funzionare bene
 end
