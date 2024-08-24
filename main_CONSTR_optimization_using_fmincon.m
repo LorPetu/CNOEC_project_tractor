@@ -18,11 +18,11 @@ parameters=[Lt;Li;d];
 %% Boundaries
 
 % Upper bound y<mx+q
-constr_param.m(1)   =  0.5; % zero for standard case
-constr_param.q(1)   = 12;
+constr_param.m(1)   =  0; % zero for standard case
+constr_param.q(1)   = 16;
 
 % Lower bound y<mx+q
-constr_param.m(2)   =   0.5; % zero for standard case
+constr_param.m(2)   =   0; % zero for standard case
 constr_param.q(2)   =   0;
 
 %% Mode selection
@@ -120,7 +120,7 @@ options = optimoptions(@fmincon,...
 %% Run solver
 tic ;
 
-constr_param.lb_vel = 0; 
+constr_param.c_vel = 0; 
 
  U0              = [0.5*ones(8,1);
                    -0.5*ones(Np-8,1); 
@@ -137,7 +137,7 @@ disp(['Vincolo sul limite superiore è ', num2str(Ustar(end-1)) ]);
 %% eventuale seconda iterazione
 s =    Ustar(2*Np+1:end-1,1);
 if exitflag.constrviolation >options.ConstraintTolerance
-     constr_param.lb_vel = 1; 
+     constr_param.c_vel = 1; 
 
     U0              = [-0.5*ones(12,1);
                     0.5*ones(12,1);
@@ -191,7 +191,7 @@ subplot(2,1,1);plot(0:Ts_p:(Np-1)*Ts_p,delta,'b'),xlabel('Time (s)'),ylabel('del
 subplot(2,1,2);plot(0:Ts_p:(Np-1)*Ts_p,acc,'b'),xlabel('Time (s)'),ylabel('acc'),grid on;
 
 figure(3)
-plot(plx,ply,'b','DisplayName', 'Tractor');hold on;
+plot(plx,ply,'--o','Color','b','DisplayName', 'Tractor');hold on;
 plot(asse,constr_param.m(2)*asse + constr_param.q(2),"red",'DisplayName', 'Upper limit'); hold on;
 plot(asse,constr_param.m(1)*asse + constr_param.q(1),"red",'DisplayName', 'Lower limit'); hold on;
 
@@ -210,7 +210,7 @@ if strcmp(MODE,'01')
     subplot(4,1,4),plot(0:Ts:Ns*Ts,zstar(8,:),'g'),xlabel('Time (s)'),ylabel('velocità implement'),grid on
 
     figure(3)
-    plot(zstar(5,:),zstar(6,:),'g','DisplayName', 'Implement'); hold on
+    plot(zstar(5,:),zstar(6,:),'--o','Color','g','DisplayName', 'Implement'); hold on
     plot(zf(5),zf(6),"xr",'MarkerSize', 10, 'LineWidth', 2,'DisplayName', 'Target point');
 
 

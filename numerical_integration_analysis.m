@@ -2,7 +2,9 @@ clear all
 close all
 clc
 
-
+warning('off', 'all');
+addpath(genpath('Models/'));
+addpath(genpath('Optimization_functions/'));
 % errore calcolato sulla distanza x e y rispetto a ode45 (ground truth)
 %% Model Parameters
 
@@ -175,10 +177,10 @@ for k=1:length(j)
 
     figure()
     plot(z_sim_rk2(1,:), z_sim_rk2(2,:));hold on;
-    plot(z_sim_rk3(1,:), z_sim_rk3(2,:))
-    plot(z_sim_rk4(1,:), z_sim_rk4(2,:))
-    plot(z_sim_ffd(1,:), z_sim_ffd(2,:))
-    plot(z_sim_ode(1,:), z_sim_ode(2,:))
+    plot(z_sim_rk3(1,:), z_sim_rk3(2,:));hold on;
+    plot(z_sim_rk4(1,:), z_sim_rk4(2,:));hold on;
+    plot(z_sim_ffd(1,:), z_sim_ffd(2,:));hold on;
+    plot(z_sim_ode(1,:), z_sim_ode(2,:));hold on;
     daspect([1,1,1]),xlabel('X [m]'),ylabel('Y [m]'),grid on;
     legend('RK2', 'RK3', 'RK4','FFD', 'ODE45');
     title('comparison between trajectories', ['Ts=' num2str(j(k))])

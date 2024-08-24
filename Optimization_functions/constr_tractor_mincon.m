@@ -22,7 +22,7 @@ q_down = constr_param.q(2);
 
 zf = constr_param.zf;
 
-lb_vel = constr_param.lb_vel;
+c_vel = constr_param.c_vel;
 
 
 Np=ceil((Ns+1)/Nu);
@@ -72,7 +72,7 @@ if strcmp(MODE,'00')
     
     h = [
         % Velocity saturation
-        (-z_sim(4,:)-lb_vel*vsat*ones(1,Ns+1))'; %lb_vel can be 0 or 1, is used to select trajectories with vel>0 only USER DEFINED
+        (-z_sim(4,:)-c_vel*vsat*ones(1,Ns+1))'; %c_vel can be 0 or 1, is used to select trajectories with vel>0 only USER DEFINED
         (+z_sim(4,:)-vsat*ones(1,Ns+1))';
 
         % Parametrized boundaries constraints
@@ -91,7 +91,7 @@ else
 
     h = [
         % Velocity saturation
-        (-z_sim(4,:)-lb_vel*vsat*ones(1,Ns+1))'; %lb_vel can be 0 or 1, is used to select trajectories with vel>0 only USER DEFINED
+        (-z_sim(4,:)-c_vel*vsat*ones(1,Ns+1))'; %c_vel can be 0 or 1, is used to select trajectories with vel>0 only USER DEFINED
         (+z_sim(4,:)-vsat*ones(1,Ns+1))';
   
         % Parametrized boundaries constrained
