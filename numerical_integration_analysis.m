@@ -37,7 +37,8 @@ j=[0.01,0.02,0.05,0.1,0.2,0.5];
 k=length(j);
 
 tempo=zeros(k,5);
-
+max_error=zeros(k,4);
+mean_error=zeros(k,4);
 Tend=10;
 
 
@@ -47,7 +48,7 @@ for k=1:length(j)
     disp( num2str(Ts))
     Ns=ceil(Tend/Ts);
 
-    delta=[-0.5*ones(1,Ns/2),0.5*ones(1,Ns/2)];
+    delta=[-0.5*ones(1,Ns/2),-0.5*ones(1,Ns/2)];
     acc=zeros(1,Ns);
     u             = [delta; acc];
     
@@ -76,12 +77,7 @@ for k=1:length(j)
     end 
     tempo(k,1)=toc;
 
-    % figure()
-    % plot(z_sim_ode(1,:), z_sim_ode(2,:)), hold on;
-    % plot(z_sim_ode(5,:), z_sim_ode(6,:)), daspect([1,1,1]),xlabel('X [m]'),ylabel('Y [m]'),grid on;
-    % legend('tractor', 'implement');
-    % title('ODE45')
-    
+
     
     %% simulation using rk2
     tic 
@@ -93,13 +89,9 @@ for k=1:length(j)
          errore_rk2(k,ind-1)=sqrt((z_sim_rk2(1,ind)-z_sim_ode(1,ind))^2+(z_sim_rk2(2,ind)-z_sim_ode(2,ind))^2);
     end 
     tempo(k, 2)=toc;
-    
-    
-    % figure()
-    % plot(z_sim_rk2(1,:), z_sim_rk2(2,:)), hold on;
-    % plot(z_sim_rk2(5,:), z_sim_rk2(6,:)), daspect([1,1,1]),xlabel('X [m]'),ylabel('Y [m]'),grid on;
-    % legend('tractor', 'implement');
-    % title('RK2')
+    max_error(k, 1)= max(errore_rk2(k,:));
+    mean_error(k, 1)= mean(errore_rk2(k,:));
+   
     
     %% RK3
     z_sim_rk3    =   zeros(8,Ns);
@@ -116,13 +108,9 @@ for k=1:length(j)
         errore_rk3(k,ind-1)=sqrt((z_sim_rk3(1,ind)-z_sim_ode(1,ind))^2+(z_sim_rk3(2,ind)-z_sim_ode(2,ind))^2);
     end
     tempo(k,3)=toc;
-    
-    % figure()
-    % plot(z_sim_rk3(1,:), z_sim_rk3(2,:)), hold on;
-    % plot(z_sim_rk3(5,:), z_sim_rk3(6,:)), daspect([1,1,1]),xlabel('X [m]'),ylabel('Y [m]'),grid on;
-    % legend('tractor', 'implement');
-    % title('RK3')
-    % 
+     max_error(k, 2)= max(errore_rk3(k,:));
+     mean_error(k, 2)= mean(errore_rk3(k,:));
+
     %% Rk4
     
     z_sim_rk4    =   zeros(8,Ns);
@@ -139,13 +127,9 @@ for k=1:length(j)
         errore_rk4(k,ind-1)=sqrt((z_sim_rk4(1,ind)-z_sim_ode(1,ind))^2+(z_sim_rk4(2,ind)-z_sim_ode(2,ind))^2);
     end
     tempo(k,4)=toc;
-    
-    % figure()
-    % plot(z_sim_rk4(1,:), z_sim_rk4(2,:)), hold on;
-    % plot(z_sim_rk4(5,:), z_sim_rk4(6,:)), daspect([1,1,1]),xlabel('X [m]'),ylabel('Y [m]'),grid on;
-    % legend('tractor', 'implement');
-    % title('RK4')
-    
+     max_error(k, 3)= max(errore_rk4(k,:));
+     mean_error(k, 3)= mean(errore_rk4(k,:));
+   
     %% simulation using FFD
     tic
     for ind=2:Ns
@@ -156,13 +140,8 @@ for k=1:length(j)
         errore_ffd(k,ind-1)=sqrt((z_sim_ffd(1,ind)-z_sim_ode(1,ind))^2+(z_sim_ffd(2,ind)-z_sim_ode(2,ind))^2);
     end 
     tempo(k,5)=toc;
-    
-    
-    % figure()
-    % plot(z_sim_ffd(1,:), z_sim_ffd(2,:)), hold on;
-    % plot(z_sim_ffd(5,:), z_sim_ffd(6,:)), daspect([1,1,1]),xlabel('X [m]'),ylabel('Y [m]'),grid on;
-    % legend('tractor', 'implement');
-    % title('FFD')
+     max_error(k, 4)= max(errore_ffd(k,:));
+     mean_error(k, 4)= mean(errore_ffd(k,:));
 
 
     figure()
@@ -170,9 +149,9 @@ for k=1:length(j)
     plot(linspace(0, Tend, Ns-1), errore_rk3(k,:))
     plot(linspace(0, Tend, Ns-1), errore_rk4(k,:))
     plot(linspace(0, Tend, Ns-1), errore_ffd(k,:))
-    xlabel('tempo'),ylabel('errore'),grid on;
+    xlabel('Time [s]'),ylabel('Error [s]'),grid on;
     legend('RK2', 'RK3', 'RK4','FFD');
-    title('errors with respect to ODE45', ['Ts=' num2str(j(k))])
+    title('Errors with respect to ODE45', ['Ts=' num2str(j(k))])
 
 
     figure()
@@ -183,7 +162,7 @@ for k=1:length(j)
     plot(z_sim_ode(1,:), z_sim_ode(2,:));hold on;
     daspect([1,1,1]),xlabel('X [m]'),ylabel('Y [m]'),grid on;
     legend('RK2', 'RK3', 'RK4','FFD', 'ODE45');
-    title('comparison between trajectories', ['Ts=' num2str(j(k))])
+    title('Comparison between trajectories', ['Ts=' num2str(j(k))])
 end
 
 %%
@@ -199,5 +178,17 @@ for i = 1:size(tempo, 5)
 end
 
 
+colnames = {'RK2', 'RK3', 'RK4','FFD'};
+
+for i = 1:size(max_error, 4)
+    fprintf('\nTable of maximum error for each integration method and each sampling time tested:\n', i);
+    T = array2table(max_error(:,:,i), 'VariableNames', colnames,'RowNames', rownames); 
+    disp(T); 
+end
 
 
+for i = 1:size(mean_error, 4)
+    fprintf('\nTable of mean error for each integration method and each sampling time tested:\n', i);
+    T = array2table(mean_error(:,:,i), 'VariableNames', colnames,'RowNames', rownames); 
+    disp(T); 
+end
