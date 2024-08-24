@@ -24,6 +24,8 @@ zf = constr_param.zf;
 
 c_vel = constr_param.c_vel;
 
+tol_f = constr_param.tol_f;
+
 
 Np=ceil((Ns+1)/Nu);
 
@@ -60,9 +62,7 @@ g=[];
 
 %% Inequality constraints h(x)
 
-lim = [0.05,0.05,5*pi/180,0.5/3.6,0.05,0.05,5*pi/180,0.5/3.6]';
-
-lim = lim(1:n_mode);
+tol_f = tol_f(1:n_mode);
 
 % ## fmincon info ##
 % non linear inequalities constraints are specified in the form h(x)<=0
@@ -80,7 +80,7 @@ if strcmp(MODE,'00')
         (-z_sim(2,:)+m_down*z_sim(1,:)+q_down*ones(1,Ns+1))';   % y > m*x+q --> -y + m*x + q <=  0 
 
         % Final states tolerances
-        (abs(z_sim(:,end)-zf)-lim)
+        (abs(z_sim(:,end)-zf)-tol_f)
         ];
 
 
@@ -100,7 +100,7 @@ else
         (-z_sim(6,:)+m_down*z_sim(5,:)+q_down*ones(1,Ns+1))'; % y > m*x+q --> -y + m*x + q <=  0 ONLY FOR THE IMPLEMENT
         
         % Final states tolerances
-        (abs(z_sim(:,end)-zf)-lim);
+        (abs(z_sim(:,end)-zf)-tol_f);
         (delta_psi-delta_psi_sat)'  %difference between the orientation of the 2 must be lower than a threshold
         ];     
 

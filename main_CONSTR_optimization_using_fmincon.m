@@ -86,8 +86,13 @@ asat        =   1;                   % Cart position limits
 deltasat    =   30*pi/180;
 delta_psi_sat = 90*pi/180;
 
+tol_f = [0.05,0.05,5*pi/180,0.5/3.6,0.05,0.05,5*pi/180,0.5/3.6]'; % Tolerances for the final state error
+
 constr_param.vsat           =   vsat;
 constr_param.delta_psi_sat  =   delta_psi_sat;
+constr_param.tol_f          =   tol_f;
+
+
 
 Np=ceil((Ns+1)/Nu);
 
