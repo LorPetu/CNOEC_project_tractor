@@ -19,18 +19,20 @@ parameters=[Lt;Li;d];
 
 % Upper bound y<mx+q
 constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   = 16;
+constr_param.q(1)   = 17;
 
 % Lower bound y<mx+q
 constr_param.m(2)   =   0; % zero for standard case
 constr_param.q(2)   =   0;
+
+theta= atan(constr_param.m(1));
+constr_param.q_adj=(d/2)/cos(theta);
 
 %% Mode selection
 % '00' - Only tractor model
 % '01' - Tractor and implement model
 
 MODE    = '01';
-
 
 %% initial states
 % Tractor
@@ -81,10 +83,10 @@ Ns          =   75;                  % Simulation steps
 Ts          =   0.25;                % initial guess for time step
 Nu          =   2;                   %ogni quanti istanti di simulazione viene calcolato u
 
-vsat        =   20/3.6;              % Input saturation
+vsat        =   15/3.6;              % Input saturation
 asat        =   1;                   % Cart position limits
 deltasat    =   30*pi/180;
-delta_psi_sat = 90*pi/180;
+delta_psi_sat = 75*pi/180;
 
 tol_f = [0.05,0.05,5*pi/180,0.5/3.6,0.05,0.05,5*pi/180,0.5/3.6]'; % Tolerances for the final state error
 
@@ -116,8 +118,8 @@ options = optimoptions(@fmincon,...
     'EnableFeasibilityMode', true,...
     'MaxFunctionEvaluations',1e10, ...
     'MaxIterations',500,...
-    'StepTolerance',1e-17,...
-    'OptimalityTolerance',1e-20,...  
+    'StepTolerance',1e-18,...
+    'OptimalityTolerance',1e-18,...  
     'HessianApproximation', 'bfgs', ...
     'PlotFcn', {@plotfun_tractor_states},... 
     'Display','iter-detailed');
@@ -129,8 +131,8 @@ constr_param.c_vel = 0;
 
  U0              = [0.5*ones(8,1);
                    -0.5*ones(Np-8,1); 
-                   0.2*ones(floor(Np/2),1);
-                   -0.2*ones(ceil(Np/2),1);
+                   0.2*ones(ceil(Np/2),1);
+                   -0.2*ones(floor(Np/2),1);
                    Ts;]; 
 
 
@@ -197,9 +199,9 @@ subplot(2,1,2);plot(0:Ts_p:(Np-1)*Ts_p,acc,'b'),xlabel('Time (s)'),ylabel('acc')
 
 figure(3)
 plot(plx,ply,'--o','Color','b','DisplayName', 'Tractor');hold on;
-plot(asse,constr_param.m(2)*asse + constr_param.q(2),"red",'DisplayName', 'Upper limit'); hold on;
-plot(asse,constr_param.m(1)*asse + constr_param.q(1),"red",'DisplayName', 'Lower limit'); hold on;
-
+plot(asse,constr_param.m(2)*asse + constr_param.q(2),"r",'DisplayName', 'Upper limit'); hold on;
+plot(asse,constr_param.m(1)*asse + constr_param.q(1),"k",'DisplayName', 'Lower limit'); hold on;
+plot(asse,constr_param.m(1)*asse + constr_param.q(1)-constr_param.q_adj,"r",'DisplayName', 'Lower limit'); hold on;
 daspect([1 1 1]);%axis([-5 10 -5 10]);
 xlabel('x'); ylabel('y');title('traiettoria'),grid on
 legend('show');
@@ -237,12 +239,12 @@ ha2 = annotation('textbox',ann2pos,'string',ann2str);
 ha2.HorizontalAlignment = 'left';
 ha2.EdgeColor = 'red';
 
-% fprintf('\n    xt finale    xt target     error\n %f    %f    %f\n',plx(end,1),zf(1),abs(plx(end,1)-zf(1)));
-% fprintf('   yt finale    yt target     error\n %f    %f    %f\n',ply(end,1),zf(2),abs(ply(end,1)-zf(2)));
-% fprintf('   psit finale  psit target   error\n %f    %f    %f (=%f deg)\n',ang(end,1),psitf,abs(ang(end,1)-psitf),abs(ang(end,1)-psitf)*180/pi);
-% fprintf('   vt finale    vt target     error\n %f    %f    %f\n\n',vel(end,1),vtf,abs(vel(end,1)-vtf));
-% fprintf('   xi finale    xi target     error\n %f    %f    %f\n',zstar(5,end),zf(5),abs(zstar(5,end)-zf(5)));
-% fprintf('   yi finale    yi target     error\n %f    %f    %f\n',zstar(6,end),zf(6),abs(zstar(6,end)-zf(6)));
-% fprintf('   psii finale  psii target   error\n %f    %f    %f (=%f deg)\n',zstar(7,end),psiif,abs(zstar(7,end)-psiif),abs(zstar(7,end)-psiif)*180/pi);
-% fprintf('   vi finale    vi target     error\n %f    %f    %f\n\n',zstar(8,end),vif,abs(zstar(8,end)-vif));
+fprintf('\n    xt finale    xt target     error\n %f    %f    %f\n',plx(end,1),zf(1),abs(plx(end,1)-zf(1)));
+fprintf('   yt finale    yt target     error\n %f    %f    %f\n',ply(end,1),zf(2),abs(ply(end,1)-zf(2)));
+fprintf('   psit finale  psit target   error\n %f    %f    %f (=%f deg)\n',ang(end,1),psitf,abs(ang(end,1)-psitf),abs(ang(end,1)-psitf)*180/pi);
+fprintf('   vt finale    vt target     error\n %f    %f    %f\n\n',vel(end,1),vtf,abs(vel(end,1)-vtf));
+fprintf('   xi finale    xi target     error\n %f    %f    %f\n',zstar(5,end),zf(5),abs(zstar(5,end)-zf(5)));
+fprintf('   yi finale    yi target     error\n %f    %f    %f\n',zstar(6,end),zf(6),abs(zstar(6,end)-zf(6)));
+fprintf('   psii finale  psii target   error\n %f    %f    %f (=%f deg)\n',zstar(7,end),psiif,abs(zstar(7,end)-psiif),abs(zstar(7,end)-psiif)*180/pi);
+fprintf('   vi finale    vi target     error\n %f    %f    %f\n\n',zstar(8,end),vif,abs(zstar(8,end)-vif));
 
