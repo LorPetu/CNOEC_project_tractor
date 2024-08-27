@@ -15,24 +15,23 @@ d         =   4.0;                  % Row width (m)
 
 parameters=[Lt;Li;d];
 
-%% Boundaries
-
-% Upper bound y<mx+q
-constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   = 17;
-
-% Lower bound y<mx+q
-constr_param.m(2)   =   0; % zero for standard case
-constr_param.q(2)   =   0;
-
-theta= atan(constr_param.m(1));
-constr_param.q_adj=(d/2)/cos(theta);
-
 %% Mode selection
 % '00' - Only tractor model
 % '01' - Tractor and implement model
 
 MODE    = '01';
+
+%% Boundaries
+
+% Upper bound y<mx+q
+constr_param.m(1)   =  0; % zero for standard case
+constr_param.q(1)   = 20;
+
+% Lower bound y<mx+q
+constr_param.m(2)   =   0; % zero for standard case
+constr_param.q(2)   =   0;
+
+
 
 %% initial states
 % Tractor
@@ -118,8 +117,8 @@ options = optimoptions(@fmincon,...
     'EnableFeasibilityMode', true,...
     'MaxFunctionEvaluations',1e10, ...
     'MaxIterations',500,...
-    'StepTolerance',1e-18,...
-    'OptimalityTolerance',1e-18,...  
+    'StepTolerance',1e-15,...
+    'OptimalityTolerance',1e-15,...  
     'HessianApproximation', 'bfgs', ...
     'PlotFcn', {@plotfun_tractor_states},... 
     'Display','iter-detailed');
@@ -134,6 +133,10 @@ constr_param.c_vel = 0;
                    0.2*ones(ceil(Np/2),1);
                    -0.2*ones(floor(Np/2),1);
                    Ts;]; 
+
+[z01] = Tractor_traj(U0,z0,Nu,Ns,parameters,MODE);
+figure()
+plot(z01(1,:),z01(2,:)); daspect([1 1 1])
 
 
 [Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,Nu,Ns,parameters,constr_param,MODE)...
@@ -153,6 +156,12 @@ if exitflag.constrviolation >options.ConstraintTolerance
                    -0.7*ones(Np-27,1);
                    0.5*ones(17,1);
                    Ts;]; 
+
+    
+    [z02] = Tractor_traj(U0,z0,Nu,Ns,parameters,MODE);
+    figure()
+    plot(z02(1,:),z02(2,:)); daspect([1 1 1])
+
 
     [Ustar,fxstar,niter,exitflag,xsequence] = fmincon(@(U)cost_tractor_mincon(U,z0,Nu,Ns,parameters,constr_param,MODE)...
                                                     ,U0,[],[],[],[],lb,ub,...
@@ -198,13 +207,24 @@ subplot(2,1,1);plot(0:Ts_p:(Np-1)*Ts_p,delta,'b'),xlabel('Time (s)'),ylabel('del
 subplot(2,1,2);plot(0:Ts_p:(Np-1)*Ts_p,acc,'b'),xlabel('Time (s)'),ylabel('acc'),grid on;
 
 figure(3)
-plot(plx,ply,'--o','Color','b','DisplayName', 'Tractor');hold on;
-plot(asse,constr_param.m(2)*asse + constr_param.q(2),"r",'DisplayName', 'Upper limit'); hold on;
-plot(asse,constr_param.m(1)*asse + constr_param.q(1),"k",'DisplayName', 'Lower limit'); hold on;
-plot(asse,constr_param.m(1)*asse + constr_param.q(1)-constr_param.q_adj,"r",'DisplayName', 'Lower limit'); hold on;
-daspect([1 1 1]);%axis([-5 10 -5 10]);
-xlabel('x'); ylabel('y');title('traiettoria'),grid on
+plot(plx,ply,'Color','b','DisplayName', 'Tractor trajectory', 'linewidth',1);hold on;
+plot(asse,constr_param.m(2)*asse + constr_param.q(2),"r",'DisplayName','Lower limit' ); hold on;
+plot(asse,constr_param.m(1)*asse + constr_param.q(1),"r",'DisplayName', 'Upper limit'); hold on;
+daspect([1 1 1]);axis([-5 10 -5 constr_param.q(1)+5]);
+xlabel('X [m]'); ylabel('Y [m]');title('Trajectory'),grid on
+xLimits = get(gca, 'XLim');
+yLimits = get(gca, 'YLim');
+set(gca, 'XTick', xLimits(1):5:xLimits(2));
+set(gca, 'YTick', yLimits(1):5:yLimits(2));
 legend('show');
+
+
+if strcmp(MODE,'00')
+    figure(3)
+    plot(zf(1),zf(2),"xr",'MarkerSize', 10, 'LineWidth', 2,'DisplayName', 'Target point');
+    legend('show');
+
+end
 
 if strcmp(MODE,'01')
     delta_psi=abs(zstar(3,:)-zstar(7,:));
@@ -217,27 +237,27 @@ if strcmp(MODE,'01')
     subplot(4,1,4),plot(0:Ts:Ns*Ts,zstar(8,:),'g'),xlabel('Time (s)'),ylabel('velocità implement'),grid on
 
     figure(3)
-    plot(zstar(5,:),zstar(6,:),'--o','Color','g','DisplayName', 'Implement'); hold on
+    plot(zstar(5,:),zstar(6,:),'Color','g','DisplayName', 'Implement', 'linewidth',1); hold on
     plot(zf(5),zf(6),"xr",'MarkerSize', 10, 'LineWidth', 2,'DisplayName', 'Target point');
-
+    legend('show');
 
 end
 
 
 % Annotation for parameters 
 
-ann1str = sprintf('Execution time \n T_{end} = %.2f sec ',Ts*Ns); % annotation text
-ann1pos = [0.018 0.71 0.22 0.16]; % annotation position in figure coordinates
-ha1 = annotation('textbox',ann1pos,'string',ann1str);
-ha1.HorizontalAlignment = 'left';
+% ann1str = sprintf('Execution time \n T_{end} = %.2f sec ',Ts*Ns); % annotation text
+% ann1pos = [0.018 0.71 0.22 0.16]; % annotation position in figure coordinates
+% ha1 = annotation('textbox',ann1pos,'string',ann1str);
+% ha1.HorizontalAlignment = 'left';
 
 
 %Annotation for constraints
-ann2str = sprintf('Constraints:\n Y < %.1f*X + %.f \n Y > %.1f*X + %.f ',constr_param.m(1),constr_param.q(1),constr_param.m(2),constr_param.q(2)); % annotation text
-ann2pos = [0.02 0.2 0.1 0.1]; % annotation position in figure coordinates
-ha2 = annotation('textbox',ann2pos,'string',ann2str);
-ha2.HorizontalAlignment = 'left';
-ha2.EdgeColor = 'red';
+% ann2str = sprintf('Constraints:\n Y < %.1f*X + %.f \n Y > %.1f*X + %.f ',constr_param.m(1),constr_param.q(1),constr_param.m(2),constr_param.q(2)); % annotation text
+% ann2pos = [0.02 0.2 0.1 0.1]; % annotation position in figure coordinates
+% ha2 = annotation('textbox',ann2pos,'string',ann2str);
+% ha2.HorizontalAlignment = 'left';
+% ha2.EdgeColor = 'red';
 
 fprintf('\n    xt finale    xt target     error\n %f    %f    %f\n',plx(end,1),zf(1),abs(plx(end,1)-zf(1)));
 fprintf('   yt finale    yt target     error\n %f    %f    %f\n',ply(end,1),zf(2),abs(ply(end,1)-zf(2)));
@@ -248,3 +268,8 @@ fprintf('   yi finale    yi target     error\n %f    %f    %f\n',zstar(6,end),zf
 fprintf('   psii finale  psii target   error\n %f    %f    %f (=%f deg)\n',zstar(7,end),psiif,abs(zstar(7,end)-psiif),abs(zstar(7,end)-psiif)*180/pi);
 fprintf('   vi finale    vi target     error\n %f    %f    %f\n\n',zstar(8,end),vif,abs(zstar(8,end)-vif));
 
+
+%% cond initial
+
+
+[zstar] = Tractor_traj(U0,z0,Nu,Ns,parameters,MODE);

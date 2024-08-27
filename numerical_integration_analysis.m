@@ -17,7 +17,7 @@ parameters=[Lt;Li;d];
 %% initial states
 psit      =    pi/2;              % yaw angle (rad)
 psii     =     psit;               % implement yaw angle (rad)
-vt        =    20/3.6;             % body x velocity (m/s) 
+vt        =    15/3.6;             % body x velocity (m/s) 
 vi       =   vt;               % implement body x velocity (m/s)
 xi       =   0;               % implemen inertial X position (m)
 yi       =   0;               % implement inertial Y position (m)
@@ -149,7 +149,7 @@ for k=1:length(j)
     plot(linspace(0, Tend, Ns-1), errore_rk3(k,:))
     plot(linspace(0, Tend, Ns-1), errore_rk4(k,:))
     plot(linspace(0, Tend, Ns-1), errore_ffd(k,:))
-    xlabel('Time [s]'),ylabel('Error [s]'),grid on;
+    xlabel('Time [s]'),ylabel('Error [m]'),grid on;
     legend('RK2', 'RK3', 'RK4','FFD');
     title('Errors with respect to ODE45', ['Ts=' num2str(j(k))])
 

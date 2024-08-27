@@ -19,7 +19,6 @@ m_up= constr_param.m(1);
 m_down= constr_param.m(2);
 q_up = constr_param.q(1);
 q_down = constr_param.q(2);
-q_adj=constr_param.q_adj;
 
 zf = constr_param.zf;
 
@@ -77,7 +76,7 @@ if strcmp(MODE,'00')
         (+z_sim(4,:)-vsat*ones(1,Ns+1))';
 
         % Parametrized boundaries constraints
-        (z_sim(2,:)-m_up*z_sim(1,:)-(q_up)*ones(1,Ns+1)+q_adj*ones(1,Ns+1))';      % y < m*x+q --> y - m*x - q  <=  0 
+        (z_sim(2,:)-m_up*z_sim(1,:)-(q_up)*ones(1,Ns+1))';      % y < m*x+q --> y - m*x - q  <=  0 
         (-z_sim(2,:)+m_down*z_sim(1,:)+q_down*ones(1,Ns+1))';   % y > m*x+q --> -y + m*x + q <=  0 
 
         % Final states tolerances
@@ -96,8 +95,8 @@ else
         (+z_sim(4,:)-vsat*ones(1,Ns+1))';
   
         % Parametrized boundaries constrained
-        (z_sim(2,:)-m_up*z_sim(1,:)-q_up*ones(1,Ns+1)+q_adj*ones(1,Ns+1))'; % y < m*x+q --> y - m*x - q  <=  0 
-        (z_sim(6,:)-m_up*z_sim(5,:)-q_up*ones(1,Ns+1)+q_adj*ones(1,Ns+1))'; % y < m*x+q --> y - m*x - q  <=  0 
+        (z_sim(2,:)-m_up*z_sim(1,:)-q_up*ones(1,Ns+1))'; % y < m*x+q --> y - m*x - q  <=  0 
+        (z_sim(6,:)-m_up*z_sim(5,:)-q_up*ones(1,Ns+1))'; % y < m*x+q --> y - m*x - q  <=  0 
         (-z_sim(6,:)+m_down*z_sim(5,:)+q_down*ones(1,Ns+1))'; % y > m*x+q --> -y + m*x + q <=  0 ONLY FOR THE IMPLEMENT
         
         % Final states tolerances
