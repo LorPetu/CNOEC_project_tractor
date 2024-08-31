@@ -32,7 +32,7 @@ z0=[xt;yt;psit;vt;xi;yi;psii;vi];
 %% Input variables
 
 j= linspace(0.01, 0.02, 10);
-j=[0.01,0.02,0.05,0.1,0.2,0.5];
+j=[0.01,0.025,0.05,0.1,0.25,0.5];
 
 k=length(j);
 
@@ -166,10 +166,29 @@ for k=1:length(j)
 end
 
 %%
+rownames= string(j);
 
+colnames = {'RK2', 'RK3', 'RK4','FFD'};
+max_error = arrayfun(@(x) sprintf('%.2e', x), max_error, 'UniformOutput', false);
+
+for i = 1:size(max_error, 4)
+    fprintf('\nTable of maximum error for each integration method and each sampling time tested:\n', i);
+    T = array2table(max_error(:,:,i), 'VariableNames', colnames,'RowNames', rownames); 
+    disp(T); 
+end
+
+mean_error = arrayfun(@(x) sprintf('%.2e', x), mean_error, 'UniformOutput', false);
+
+for i = 1:size(mean_error, 4)
+    fprintf('\nTable of mean error for each integration method and each sampling time tested:\n', i);
+    T = array2table(mean_error(:,:,i), 'VariableNames', colnames,'RowNames', rownames); 
+    disp(T); 
+end
 
 colnames = {'ODE45','RK2', 'RK3', 'RK4','FFD'};
-rownames= string(j);
+
+
+tempo = arrayfun(@(x) sprintf('%.2e', x), tempo, 'UniformOutput', false);
 
 for i = 1:size(tempo, 5)
     fprintf('\nTable of computation time for each integration method and each sampling time tested:\n', i);
@@ -178,17 +197,3 @@ for i = 1:size(tempo, 5)
 end
 
 
-colnames = {'RK2', 'RK3', 'RK4','FFD'};
-
-for i = 1:size(max_error, 4)
-    fprintf('\nTable of maximum error for each integration method and each sampling time tested:\n', i);
-    T = array2table(max_error(:,:,i), 'VariableNames', colnames,'RowNames', rownames); 
-    disp(T); 
-end
-
-
-for i = 1:size(mean_error, 4)
-    fprintf('\nTable of mean error for each integration method and each sampling time tested:\n', i);
-    T = array2table(mean_error(:,:,i), 'VariableNames', colnames,'RowNames', rownames); 
-    disp(T); 
-end

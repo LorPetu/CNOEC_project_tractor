@@ -29,6 +29,8 @@ function [z_sim] = Tractor_traj(U,z0,Nu,Ns,parameters,MODE)
         % RK2
         z_prime_rk2         =   z_sim(:,ind-1)+Ts/2*Tractor_model_used(z_sim(:,ind-1),u,parameters);
         z_sim(:,ind)        =   z_sim(:,ind-1)+Ts*Tractor_model_used(z_prime_rk2,u,parameters);
+
+       
     
     end
 
