@@ -20,13 +20,13 @@ parameters=[Lt;Li;d];
 % '00' - Only tractor model
 % '01' - Tractor and implement model
 
-MODE    = '01';
+MODE    = '00';
 
 %% Boundaries
 
 % Upper bound y<mx+q
 constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   = 20;
+constr_param.q(1)   = 17;
 
 % Lower bound y<mx+q
 constr_param.m(2)   =   0; % zero for standard case
@@ -116,6 +116,7 @@ options = optimoptions(@fmincon,...
     'MaxFunctionEvaluations',1e6, ...
     'MaxIterations',200,...
     'StepTolerance',1e-8,...
+    'OptimalityTolerance', 10e-10,...
     'HessianApproximation', 'bfgs', ...
     'PlotFcn', {@plotfun_tractor_states},... 
     'Display','iter');
