@@ -20,13 +20,13 @@ parameters=[Lt;Li;d];
 % '00' - Only tractor model
 % '01' - Tractor and implement model
 
-MODE    = '00';
+MODE    = '01';
 
 %% Boundaries
 
 % Upper bound y<mx+q
 constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   = 17;
+constr_param.q(1)   = 16;
 
 % Lower bound y<mx+q
 constr_param.m(2)   =   0; % zero for standard case
@@ -162,10 +162,12 @@ if exitflag.constrviolation >options.ConstraintTolerance
 
     if exitflag.constrviolation >options.ConstraintTolerance
         error=1;
+        disp('No feasible solution has been found');
     end
 end
 
-tempo_trascorso = toc;
+opt_routine_time = toc;
+results.opt_routine_time = opt_routine_time;
 
 %% calcolo stati finali
 if error==0
@@ -174,10 +176,12 @@ if error==0
     Ts_p= Ustar(end,1)*Nu;
     Ts  = Ustar(end,1);
     
+    results.Tend    =   Ts*Ns;
+    results.Ts      =   Ts;  
     % Visualizza il tempo trascorso
-    disp(['Tempo finale Tend: ', num2str(Ts*Ns), ' secondi']);
-    disp(['Tempo di campionamento Ts: ', num2str(Ts), ' secondi']);
-    disp(['Tempo per calcolo: ', num2str(tempo_trascorso), ' secondi']);
+    disp(['Final Time Tend: ', num2str(Ts*Ns), ' secondi']);
+    disp(['Sampling Time Ts: ', num2str(Ts), ' secondi']);
+    disp(['Optimization Routine Time: ', num2str(opt_routine_time), ' secondi']);
     plx =   zstar(1,:)';
     ply =   zstar(2,:)';
     ang =   zstar(3,:)';
@@ -187,66 +191,100 @@ if error==0
     acc     =   Ustar(Np+1:end-1,1);
     
     asse=linspace(-5,10,2);
-    
-    
-    
-    
     close all
-    
-    figure(3)
-    subplot(4,1,1),plot(0:Ts:Ns*Ts,ang,'b','linewidth',1),xlabel('Time [s]'),ylabel('tractor heading angle [rad]', 'Rotation', 0),grid on
-    subplot(4,1,2),plot(0:Ts:Ns*Ts,vel,'b','linewidth',1),xlabel('Time [s]'),ylabel('tractor speed [m/s]', 'Rotation', 0),grid on
-    sgtitle('Heading anlge and speed of tractor and implement')
-   
-    figure(2)
-    
-    subplot(2,1,1);plot(0:Ts_p:(Np-1)*Ts_p,delta,'b','linewidth',1),xlabel('Time [s]'),ylabel('steering angle  [rad]', 'Rotation', 0),grid on
-    subplot(2,1,2);plot(0:Ts_p:(Np-1)*Ts_p,acc,'b','linewidth',1),xlabel('Time [s]'),ylabel('acceleration [m/s^2]', 'Rotation', 0),grid on;
-    sgtitle('Input variables')
 
-    figure(1)
-    plot(plx,ply,'Color','b','DisplayName', 'Tractor trajectory', 'linewidth',1);hold on;
+    %% Save figures
+    m_string    = replace(sprintf('m%.1f',constr_param.m(1)),'.','');
+    figname     = sprintf('___%s__q%.f',m_string,constr_param.q(1));
+    
+    setup_name  = sprintf('\\%s_%s',MODE,figname);
+    mkdir([pwd '\Images' setup_name]);
+    
+   
+    fig2 = figure(2);   
+    fig2.OuterPosition(3:4) = [520 310]; 
+    subplot(2,1,1);plot(0:Ts_p:(Np-1)*Ts_p,delta,'b','linewidth',1),xlabel('Time [s]'),ylabel('\delta_t  [rad]', 'Rotation', 90),grid on
+    subplot(2,1,2);plot(0:Ts_p:(Np-1)*Ts_p,acc,'b','linewidth',1),xlabel('Time [s]'),ylabel('a_t [m/s^2]', 'Rotation', 90),grid on;
+    sgtitle('Input variables')
+    
+   
+    fig1 = figure(1);
+    fig1.OuterPosition(3:4) = [420 620]; 
+    plot(plx,ply,'Color','b','DisplayName', 'Tractor', 'linewidth',1);hold on;
     plot(asse,constr_param.m(2)*asse + constr_param.q(2),"r",'DisplayName','Lower limit' ,'linewidth',1); hold on;
     plot(asse,constr_param.m(1)*asse + constr_param.q(1),"r",'DisplayName', 'Upper limit','linewidth',1); hold on;
     daspect([1 1 1]);axis([-5 10 -5 constr_param.q(1)+5]);
-    xlabel('X [m]'); ylabel('Y [m]', 'Rotation', 0);sgtitle('Trajectory'),grid on
+    xlabel('X [m]'); ylabel('Y [m]', 'Rotation', 90);sgtitle('Trajectory'),grid on
     
     xLimits = get(gca, 'XLim');
     yLimits = get(gca, 'YLim');
     set(gca, 'XTick', xLimits(1):5:xLimits(2));
     set(gca, 'YTick', yLimits(1):5:yLimits(2))
     legend('show');
-    
+    %%
     
     if strcmp(MODE,'00')
-        figure(1)
+        figure(fig1);
         plot(zf(1),zf(2),"xr",'MarkerSize', 10, 'LineWidth', 2,'DisplayName', 'Target point');
-        legend('show');
+        legend('Location','northwest');
+
+        fig3 = figure(3);
+        fig3.OuterPosition(3:4) = fig2.OuterPosition(3:4);
+        subplot(2,1,1),plot(0:Ts:Ns*Ts,ang,'b','linewidth',1),xlabel('Time [s]'),ylabel('\psi_t [rad]', 'Rotation', 90),grid on
+        sgtitle('Heading angle \psi_t and speed v_t of tractor')
+        subplot(2,1,2),plot(0:Ts:Ns*Ts,vel,'b','linewidth',1),xlabel('Time [s]'),ylabel('v_t [m/s]', 'Rotation', 90),grid on
     
     end
     
     if strcmp(MODE,'01')
         delta_psi=abs(zstar(3,:)-zstar(7,:));
-    
-        figure(4)
-        plot(0:Ts:(Ns)*Ts,delta_psi,'linewidth',1,'DisplayName', 'Relative angle'); hold on
-        plot(0:Ts:(Ns)*Ts,delta_psi_sat+0*(0:Ts:(Ns)*Ts),'linewidth',1,'DisplayName', 'Maximum error')
-        xlabel('Time [s]'); ylabel('Relative angle [rad]', 'Rotation', 0);sgtitle('Relative angle between tractor and implement'),grid on
-        legend('show');
 
-        figure(3)
-        subplot(4,1,3),plot(0:Ts:Ns*Ts,zstar(7,:),'g','linewidth',1),xlabel('Time [s]'),ylabel('implement heading angle [rad] ', 'Rotation', 0),grid on
-        subplot(4,1,4),plot(0:Ts:Ns*Ts,zstar(8,:),'g','linewidth',1),xlabel('Time [s]'),ylabel('implement speed [m/s]', 'Rotation', 0),grid on
-    
-        figure(2)
-        
-        figure(1)
-        plot(zstar(5,:),zstar(6,:),'Color','g','DisplayName', 'Implement', 'linewidth',1); hold on
+        figure(fig1);
+        plot(zstar(5,:),zstar(6,:),'Color','g','DisplayName', 'Implement', 'linewidth',1); % hold on
         plot(zf(5),zf(6),"xr",'MarkerSize', 10, 'LineWidth', 2,'DisplayName', 'Target point');
-        legend('show');
+        legend('Location','northwest');
+
+        fig3 = figure(3);
+        fig3.OuterPosition(3:4) = [720 310];
+        subplot(2,2,1),plot(0:Ts:Ns*Ts,ang,'b','linewidth',1),xlabel('Time [s]'),ylabel('\psi_t [rad]', 'Rotation', 90),grid on
+        title('Heading angle \psi_t and speed v_t of tractor')
+        subplot(2,2,3),plot(0:Ts:Ns*Ts,vel,'b','linewidth',1),xlabel('Time [s]'),ylabel('v_t [m/s]', 'Rotation', 90),grid on
+         
+        subplot(2,2,2),plot(0:Ts:Ns*Ts,zstar(7,:),'g','linewidth',1),xlabel('Time [s]'),ylabel('\psi_i [rad] ', 'Rotation', 90),grid on
+        title('Heading anlge \psi_i and speed v_i of implement')
+        subplot(2,2,4),plot(0:Ts:Ns*Ts,zstar(8,:),'g','linewidth',1),xlabel('Time [s]'),ylabel('v_i [m/s]', 'Rotation', 90),grid on
+
+
+    
+        fig4 = figure(4);
+        %fig4.OuterPosition(3:4) = fig3.OuterPosition(3:4); 
+        plot(0:Ts:(Ns)*Ts,delta_psi,'linewidth',1,'DisplayName', 'Relative angle'); hold on
+        %%plot(0:Ts:(Ns)*Ts,delta_psi_sat+0*(0:Ts:(Ns)*Ts),'linewidth',1,'DisplayName', 'Maximum error')
+        xlabel('Time [s]'); ylabel('Relative angle [rad]', 'Rotation', 90);title('Relative angle between tractor and implement'),grid on
+        %%legend('show');
+        saveas(fig4,[pwd '\Images' setup_name '/DeltaImplement.svg'])
+
+
     
     end
     
+    
+    saveas(fig1,[pwd '\Images' setup_name '\Trajectory.svg'])
+    saveas(fig2,[pwd '\Images' setup_name '\InputVariables.svg'])
+    saveas(fig3,[pwd '\Images' setup_name '\States.svg'])
+
+    results.err_tractor_X   =   abs(plx(end,1)-zf(1));
+    results.err_tractor_Y   =   abs(ply(end,1)-zf(2));
+    results.err_tractor_psi =   abs(ang(end,1)-psitf)*180/pi;
+    results.err_tractor_v   =   abs(vel(end,1)-vtf);
+    if MODE=='01'
+        results.err_implement_X =   abs(zstar(5,end)-zf(5));
+        results.err_implement_Y =   abs(zstar(6,end)-zf(6));
+        results.err_implement_psi = abs(zstar(7,end)-psiif)*180/pi;
+        results.err_implement_v =   abs(zstar(8,end)-vif);
+    end
+
+    writetable(struct2table(results), [pwd '\Images' setup_name '\Results.csv']);
     
     fprintf('\n    xt finale    xt target     error\n %f    %f    %f\n',plx(end,1),zf(1),abs(plx(end,1)-zf(1)));
     fprintf('   yt finale    yt target     error\n %f    %f    %f\n',ply(end,1),zf(2),abs(ply(end,1)-zf(2)));
