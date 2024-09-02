@@ -20,16 +20,16 @@ parameters=[Lt;Li;d];
 % '00' - Only tractor model
 % '01' - Tractor and implement model
 
-MODE    = '01';
+MODE    = '00';
 
 %% Boundaries
 
 % Upper bound y<mx+q
-constr_param.m(1)   =  0; % zero for standard case
+constr_param.m(1)   =  0.5; % zero for standard case
 constr_param.q(1)   = 16;
 
 % Lower bound y<mx+q
-constr_param.m(2)   =   0; % zero for standard case
+constr_param.m(2)   =   0.5; % zero for standard case
 constr_param.q(2)   =   0;
 
 
@@ -127,7 +127,8 @@ tic ;
 constr_param.c_vel = 0; 
 
  U0              = [0.5*ones(8,1);
-                   -0.5*ones(Np-8,1); 
+                   -0.5*ones(Np ...
+                   -8,1); 
                    0.2*ones(ceil(Np/2),1);
                    -0.2*ones(floor(Np/2),1);
                    Ts;]; 
@@ -139,7 +140,7 @@ constr_param.c_vel = 0;
                                                     ,U0,[],[],[],[],lb,ub,...
                                                     @(U)constr_tractor_mincon(U,z0,Nu,Ns,parameters,constr_param,MODE),options);
 
-disp(['Vincolo sul limite superiore è ', num2str(Ustar(end-1)) ]);
+
 %% eventuale seconda iterazione
 s =    Ustar(2*Np+1:end-1,1);
 if exitflag.constrviolation >options.ConstraintTolerance
@@ -184,6 +185,7 @@ if error==0
     disp(['Optimization Routine Time: ', num2str(opt_routine_time), ' secondi']);
     plx =   zstar(1,:)';
     ply =   zstar(2,:)';
+
     ang =   zstar(3,:)';
     vel =   zstar(4,:)';
     
@@ -205,7 +207,7 @@ if error==0
     fig2.OuterPosition(3:4) = [520 310]; 
     subplot(2,1,1);plot(0:Ts_p:(Np-1)*Ts_p,delta,'b','linewidth',1),xlabel('Time [s]'),ylabel('\delta_t  [rad]', 'Rotation', 90),grid on
     subplot(2,1,2);plot(0:Ts_p:(Np-1)*Ts_p,acc,'b','linewidth',1),xlabel('Time [s]'),ylabel('a_t [m/s^2]', 'Rotation', 90),grid on;
-    sgtitle('Input variables')
+    
     
    
     fig1 = figure(1);
@@ -214,7 +216,7 @@ if error==0
     plot(asse,constr_param.m(2)*asse + constr_param.q(2),"r",'DisplayName','Lower limit' ,'linewidth',1); hold on;
     plot(asse,constr_param.m(1)*asse + constr_param.q(1),"r",'DisplayName', 'Upper limit','linewidth',1); hold on;
     daspect([1 1 1]);axis([-5 10 -5 constr_param.q(1)+5]);
-    xlabel('X [m]'); ylabel('Y [m]', 'Rotation', 90);sgtitle('Trajectory'),grid on
+    xlabel('X [m]'); ylabel('Y [m]', 'Rotation', 90),grid on
     
     xLimits = get(gca, 'XLim');
     yLimits = get(gca, 'YLim');
@@ -231,7 +233,7 @@ if error==0
         fig3 = figure(3);
         fig3.OuterPosition(3:4) = fig2.OuterPosition(3:4);
         subplot(2,1,1),plot(0:Ts:Ns*Ts,ang,'b','linewidth',1),xlabel('Time [s]'),ylabel('\psi_t [rad]', 'Rotation', 90),grid on
-        sgtitle('Heading angle \psi_t and speed v_t of tractor')
+        
         subplot(2,1,2),plot(0:Ts:Ns*Ts,vel,'b','linewidth',1),xlabel('Time [s]'),ylabel('v_t [m/s]', 'Rotation', 90),grid on
     
     end
@@ -247,11 +249,11 @@ if error==0
         fig3 = figure(3);
         fig3.OuterPosition(3:4) = [720 310];
         subplot(2,2,1),plot(0:Ts:Ns*Ts,ang,'b','linewidth',1),xlabel('Time [s]'),ylabel('\psi_t [rad]', 'Rotation', 90),grid on
-        title('Heading angle \psi_t and speed v_t of tractor')
+        
         subplot(2,2,3),plot(0:Ts:Ns*Ts,vel,'b','linewidth',1),xlabel('Time [s]'),ylabel('v_t [m/s]', 'Rotation', 90),grid on
          
         subplot(2,2,2),plot(0:Ts:Ns*Ts,zstar(7,:),'g','linewidth',1),xlabel('Time [s]'),ylabel('\psi_i [rad] ', 'Rotation', 90),grid on
-        title('Heading anlge \psi_i and speed v_i of implement')
+        
         subplot(2,2,4),plot(0:Ts:Ns*Ts,zstar(8,:),'g','linewidth',1),xlabel('Time [s]'),ylabel('v_i [m/s]', 'Rotation', 90),grid on
 
 
@@ -260,7 +262,7 @@ if error==0
         %fig4.OuterPosition(3:4) = fig3.OuterPosition(3:4); 
         plot(0:Ts:(Ns)*Ts,delta_psi,'linewidth',1,'DisplayName', 'Relative angle'); hold on
         %%plot(0:Ts:(Ns)*Ts,delta_psi_sat+0*(0:Ts:(Ns)*Ts),'linewidth',1,'DisplayName', 'Maximum error')
-        xlabel('Time [s]'); ylabel('Relative angle [rad]', 'Rotation', 90);title('Relative angle between tractor and implement'),grid on
+        xlabel('Time [s]'); ylabel('Relative angle [rad]', 'Rotation', 90),grid on
         %%legend('show');
         saveas(fig4,[pwd '\Images' setup_name '/DeltaImplement.svg'])
 
@@ -275,12 +277,12 @@ if error==0
 
     results.err_tractor_X   =   abs(plx(end,1)-zf(1));
     results.err_tractor_Y   =   abs(ply(end,1)-zf(2));
-    results.err_tractor_psi =   abs(ang(end,1)-psitf)*180/pi;
+    results.err_tractor_psi =   abs(ang(end,1)-psitf);
     results.err_tractor_v   =   abs(vel(end,1)-vtf);
     if MODE=='01'
         results.err_implement_X =   abs(zstar(5,end)-zf(5));
         results.err_implement_Y =   abs(zstar(6,end)-zf(6));
-        results.err_implement_psi = abs(zstar(7,end)-psiif)*180/pi;
+        results.err_implement_psi = abs(zstar(7,end)-psiif);
         results.err_implement_v =   abs(zstar(8,end)-vif);
     end
 
@@ -288,12 +290,12 @@ if error==0
     
     fprintf('\n    xt finale    xt target     error\n %f    %f    %f\n',plx(end,1),zf(1),abs(plx(end,1)-zf(1)));
     fprintf('   yt finale    yt target     error\n %f    %f    %f\n',ply(end,1),zf(2),abs(ply(end,1)-zf(2)));
-    fprintf('   psit finale  psit target   error\n %f    %f    %f (=%f deg)\n',ang(end,1),psitf,abs(ang(end,1)-psitf),abs(ang(end,1)-psitf)*180/pi);
+    fprintf('   psit finale  psit target   error\n %f    %f    %f\n',ang(end,1),psitf,abs(ang(end,1)-psitf));
     fprintf('   vt finale    vt target     error\n %f    %f    %f\n\n',vel(end,1),vtf,abs(vel(end,1)-vtf));
     if MODE=='01'
         fprintf('   xi finale    xi target     error\n %f    %f    %f\n',zstar(5,end),zf(5),abs(zstar(5,end)-zf(5)));
         fprintf('   yi finale    yi target     error\n %f    %f    %f\n',zstar(6,end),zf(6),abs(zstar(6,end)-zf(6)));
-        fprintf('   psii finale  psii target   error\n %f    %f    %f (=%f deg)\n',zstar(7,end),psiif,abs(zstar(7,end)-psiif),abs(zstar(7,end)-psiif)*180/pi);
+        fprintf('   psii finale  psii target   error\n %f    %f    %f\n',zstar(7,end),psiif,abs(zstar(7,end)-psiif));
         fprintf('   vi finale    vi target     error\n %f    %f    %f\n\n',zstar(8,end),vif,abs(zstar(8,end)-vif));
     end
 
