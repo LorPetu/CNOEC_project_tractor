@@ -20,16 +20,16 @@ parameters=[Lt;Li;d];
 % '00' - Only tractor model
 % '01' - Tractor and implement model
 
-MODE    = '00';
+MODE    = '01';
 
 %% Boundaries
 
 % Upper bound y<mx+q
-constr_param.m(1)   =  0.5; % zero for standard case
-constr_param.q(1)   = 16;
+constr_param.m(1)   =  0; % zero for standard case
+constr_param.q(1)   = 8;
 
 % Lower bound y<mx+q
-constr_param.m(2)   =   0.5; % zero for standard case
+constr_param.m(2)   =   0; % zero for standard case
 constr_param.q(2)   =   0;
 
 
@@ -114,12 +114,13 @@ options = optimoptions(@fmincon,...
     'Algorithm','interior-point',...
     'FiniteDifferenceType','central',...
     'MaxFunctionEvaluations',1e6, ...
-    'MaxIterations',200,...
+    'MaxIterations',300,...
     'StepTolerance',1e-8,...
     'OptimalityTolerance', 10e-10,...
     'HessianApproximation', 'bfgs', ...
     'PlotFcn', {@plotfun_tractor_states},... 
-    'Display','iter');
+    'Display','iter',...
+    'OutputFcn', @myOutputFunction); 
 
 %% Run solver
 tic ;
@@ -261,7 +262,7 @@ if error==0
         fig4 = figure(4);
         %fig4.OuterPosition(3:4) = fig3.OuterPosition(3:4); 
         plot(0:Ts:(Ns)*Ts,delta_psi,'linewidth',1,'DisplayName', 'Relative angle'); hold on
-        %%plot(0:Ts:(Ns)*Ts,delta_psi_sat+0*(0:Ts:(Ns)*Ts),'linewidth',1,'DisplayName', 'Maximum error')
+        plot(0:Ts:(Ns)*Ts,delta_psi_sat+0*(0:Ts:(Ns)*Ts),'linewidth',1,'DisplayName', 'Maximum error')
         xlabel('Time [s]'); ylabel('Relative angle [rad]', 'Rotation', 90),grid on
         %%legend('show');
         saveas(fig4,[pwd '\Images' setup_name '/DeltaImplement.svg'])
