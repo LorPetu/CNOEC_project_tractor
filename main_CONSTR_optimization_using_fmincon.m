@@ -20,7 +20,7 @@ parameters=[Lt;Li;d];
 % '00' - Only tractor model
 % '01' - Tractor and implement model
 
-MODE    = '01';
+MODE    = '00';
 
 %% Boundaries
 % Linear approximation has been used to represent the operational area 
@@ -28,7 +28,7 @@ MODE    = '01';
 
 % Upper bound y<mx+q
 constr_param.m(1)   =  0; % zero for standard case
-constr_param.q(1)   = 15;
+constr_param.q(1)   = 8;
 
 % Lower bound y<mx+q
 constr_param.m(2)   =   0; % zero for standard case
@@ -196,9 +196,9 @@ if solution_flag==0
 
     % Display Time variables
     fprintf('\n\n------------------------ Results -----------------------------\n\n');
-    disp(['Final Time Tend: ', num2str(Ts*Ns), ' secondi']);
-    disp(['Sampling Time Ts: ', num2str(Ts), ' secondi']);
-    disp(['Optimization Routine Time: ', num2str(opt_routine_time), ' secondi']);
+    disp(['Final Time Tend: ', num2str(Ts*Ns), ' s']);
+    disp(['Sampling Time Ts: ', num2str(Ts), ' s']);
+    disp(['Optimization Routine Time: ', num2str(opt_routine_time), ' s']);
     
     % Export states and input for plotting
     plx             =   zstar(1,:)';
