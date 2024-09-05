@@ -20,7 +20,7 @@ parameters=[Lt;Li;d];
 % '00' - Only tractor model
 % '01' - Tractor and implement model
 
-MODE    = '00';
+MODE    = '01';
 
 %% Boundaries
 % Linear approximation has been used to represent the operational area 
@@ -195,6 +195,7 @@ if solution_flag==0
     results.Ts      =   Ts; 
 
     % Display Time variables
+    fprintf('\n\n------------------------ Results -----------------------------\n\n');
     disp(['Final Time Tend: ', num2str(Ts*Ns), ' secondi']);
     disp(['Sampling Time Ts: ', num2str(Ts), ' secondi']);
     disp(['Optimization Routine Time: ', num2str(opt_routine_time), ' secondi']);
@@ -280,7 +281,7 @@ if solution_flag==0
         fig4 = figure(4);
        
         plot(0:Ts:(Ns)*Ts,delta_psi,'linewidth',1,'DisplayName', 'Relative angle'); hold on
-        plot(0:Ts:(Ns)*Ts,delta_psi_sat+0*(0:Ts:(Ns)*Ts),'linewidth',1,'LineStyle','--',DisplayName', 'Maximum error')
+        plot(0:Ts:(Ns)*Ts,delta_psi_sat+0*(0:Ts:(Ns)*Ts),'linewidth',1,'LineStyle','--','DisplayName', 'Maximum error')
         xlabel('Time [s]'); ylabel('Relative angle [rad]', 'Rotation', 90),grid on
         legend('show');
 
@@ -306,9 +307,9 @@ if solution_flag==0
         results.err_implement_psi = abs(zstar(7,end)-psiif);
         results.err_implement_v =   abs(zstar(8,end)-vif);
     end
-
-    T= struct2table(results);
-    writetable(T, [pwd '\Images' setup_name '\Results.csv']);
+    % Uncomment this to locally save results in a csv file 
+    % T= struct2table(results);
+    % writetable(T, [pwd '\Images' setup_name '\Results.csv']);
     
     
     fprintf('\n%-15s %-15s %-15s %-15s\n', 'Variable', 'Final Value', 'Target Value', 'Error');
