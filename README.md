@@ -11,7 +11,7 @@ This work focuses on a specific maneuver that a tractor needs to perform multipl
 The operational area where the tractor must perform the maneuver before entering the next row, is called _headland_. The final pose of the tractor is heading parallel with respect starting point but in opposite direction. A schematic representation is provided in images below, depicting an ideal case without considering the real dynamics of the tractor.  
 Manuever schematic            |  Headland particular
 :-------------------------:|:-------------------------:
-![schematic](Images\problem_description.png) | ![schematic](Images\Headland_particular.png) 
+![schematic](Images/problem_description.png) | ![schematic](Image//Headland_particular.png) 
 
 Here it's shown a realistic example of a headland, taken from a satellite image of a field in southern Milan, Italy. The green area defines the operational space, typically constrained by a prohibited area and the actual field, both of which must be avoided during the maneuvering phase and are here colored in red. The objective of this work is to develop an algorithm to compute the optimal trajectory for executing the described maneuver, minimizing the execution time.
 
@@ -20,7 +20,7 @@ To perform the manuever there are main possibilities, for two consecutive rows w
 
 Bulb            |  Fishtail
 :-------------------------:|:-------------------------:
-![schematic](Images\bulb.svg) | ![Fishtail](Images\fishtail.svg)
+![schematic](Images/bulb.svg) | ![Fishtail](Images/fishtail.svg)
 
 To deal with the selection of the proper according to the headland configuration a double optimization routine has been developed to better adapt according to different headland configuration.
 
@@ -34,7 +34,7 @@ The results demonstrate successful optimization of tractor maneuvers under vario
 
 Bulb (with trailer)            |  Fishtail (with trailer)
 :-------------------------:|:-------------------------:
-![schematic](Images\01____m00__q16\Trajectory.svg) | ![Fishtail](Images\01____m05__q8\Trajectory.svg)
+![schematic](Images/01____m00__q16/Trajectory.svg) | ![Fishtail](Images/01____m05__q8/Trajectory.svg)
 
 
 ## References
