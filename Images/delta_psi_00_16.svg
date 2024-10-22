@@ -176,24 +176,24 @@
     ><path d="M91 66.8209 L97.4042 66.8209 L103.8083 66.8209 L110.2125 66.8209 L116.6167 66.8209 L123.0208 66.8209 L129.425 66.8209 L135.8292 66.8209 L142.2333 66.8209 L148.6375 66.8209 L155.0417 66.8209 L161.4458 66.8209 L167.85 66.8209 L174.2542 66.8209 L180.6584 66.8209 L187.0625 66.8209 L193.4667 66.8209 L199.8709 66.8209 L206.275 66.8209 L212.6792 66.8209 L219.0834 66.8209 L225.4875 66.8209 L231.8917 66.8209 L238.2959 66.8209 L244.7 66.8209 L251.1042 66.8209 L257.5084 66.8209 L263.9125 66.8209 L270.3167 66.8209 L276.7209 66.8209 L283.125 66.8209 L289.5292 66.8209 L295.9334 66.8209 L302.3376 66.8209 L308.7417 66.8209 L315.1459 66.8209 L321.55 66.8209 L327.9542 66.8209 L334.3584 66.8209 L340.7625 66.8209 L347.1667 66.8209 L353.5709 66.8209 L359.975 66.8209 L366.3792 66.8209 L372.7834 66.8209 L379.1876 66.8209 L385.5917 66.8209 L391.9959 66.8209 L398.4001 66.8209 L404.8042 66.8209 L411.2084 66.8209 L417.6126 66.8209 L424.0168 66.8209 L430.4209 66.8209 L436.8251 66.8209 L443.2292 66.8209 L449.6334 66.8209 L456.0376 66.8209 L462.4417 66.8209 L468.8459 66.8209 L475.2501 66.8209 L481.6543 66.8209 L488.0584 66.8209 L494.4626 66.8209 L500.8668 66.8209 L507.2709 66.8209 L513.6751 66.8209 L520.0792 66.8209 L526.4835 66.8209 L532.8876 66.8209 L539.2917 66.8209 L545.6959 66.8209 L552.1001 66.8209 L558.5043 66.8209 L564.9084 66.8209 L571.3126 66.8209" style="fill:none; fill-rule:evenodd;"
     /></g
     ><g style="fill:white; text-rendering:optimizeSpeed; color-rendering:optimizeSpeed; image-rendering:optimizeSpeed; shape-rendering:crispEdges; stroke:white; color-interpolation:sRGB;"
-    ><path style="stroke:none;" d="M621 98 L621 52 L456 52 L456 98 Z"
+    ><path style="stroke:none;" d="M256 85 L256 39 L91 39 L91 85 Z"
     /></g
-    ><g transform="translate(514.8392,64.6027)" style="text-rendering:geometricPrecision; font-size:15px; color-interpolation:linearRGB; color-rendering:optimizeQuality; image-rendering:optimizeQuality;"
+    ><g transform="translate(149.8392,51.6027)" style="text-rendering:geometricPrecision; font-size:15px; color-interpolation:linearRGB; color-rendering:optimizeQuality; image-rendering:optimizeQuality;"
     ><text x="0" xml:space="preserve" y="6" style="stroke:none;"
       >Relative angle</text
     ></g
     ><g style="stroke-linecap:butt; fill:rgb(0,114,189); text-rendering:geometricPrecision; image-rendering:optimizeQuality; color-rendering:optimizeQuality; stroke-linejoin:round; stroke:rgb(0,114,189); color-interpolation:linearRGB; stroke-width:1.6667;"
-    ><line y2="64.6027" style="fill:none;" x1="461.0076" x2="511.0835" y1="64.6027"
+    ><line y2="51.6027" style="fill:none;" x1="96.0076" x2="146.0835" y1="51.6027"
     /></g
-    ><g transform="translate(514.8392,85.3973)" style="text-rendering:geometricPrecision; font-size:15px; color-interpolation:linearRGB; color-rendering:optimizeQuality; image-rendering:optimizeQuality;"
+    ><g transform="translate(149.8392,72.3973)" style="text-rendering:geometricPrecision; font-size:15px; color-interpolation:linearRGB; color-rendering:optimizeQuality; image-rendering:optimizeQuality;"
     ><text x="0" xml:space="preserve" y="6" style="stroke:none;"
       >Maximum error</text
     ></g
     ><g style="stroke-linecap:butt; fill:rgb(217,83,25); text-rendering:geometricPrecision; image-rendering:optimizeQuality; color-rendering:optimizeQuality; stroke-linejoin:bevel; stroke-dasharray:10,6; stroke:rgb(217,83,25); color-interpolation:linearRGB; stroke-width:1.6667; stroke-miterlimit:1;"
-    ><line y2="85.3973" style="fill:none;" x1="461.0076" x2="511.0835" y1="85.3973"
+    ><line y2="72.3973" style="fill:none;" x1="96.0076" x2="146.0835" y1="72.3973"
     /></g
     ><g style="stroke-linecap:butt; fill:rgb(38,38,38); text-rendering:geometricPrecision; color-rendering:optimizeQuality; image-rendering:optimizeQuality; stroke:rgb(38,38,38); color-interpolation:linearRGB; stroke-width:0.8333;"
-    ><path d="M456 98 L456 52 L621 52 L621 98 Z" style="fill:none; fill-rule:evenodd;"
+    ><path d="M91 85 L91 39 L256 39 L256 85 Z" style="fill:none; fill-rule:evenodd;"
     /></g
   ></g
 ></svg
