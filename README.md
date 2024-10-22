@@ -11,7 +11,7 @@ This work focuses on a specific maneuver that a tractor needs to perform multipl
 The operational area where the tractor must perform the maneuver before entering the next row, is called _headland_. The final pose of the tractor is heading parallel with respect starting point but in opposite direction. A schematic representation is provided in images below, depicting an ideal case without considering the real dynamics of the tractor.  
 Manuever schematic            |  Headland particular
 :-------------------------:|:-------------------------:
-![schematic](Images/problem_description.png) | ![schematic](Image//Headland_particular.png) 
+![schematic](Images/problem_description.png) | ![schematic](Image/Headland_particular.png) 
 
 Here it's shown a realistic example of a headland, taken from a satellite image of a field in southern Milan, Italy. The green area defines the operational space, typically constrained by a prohibited area and the actual field, both of which must be avoided during the maneuvering phase and are here colored in red. The objective of this work is to develop an algorithm to compute the optimal trajectory for executing the described maneuver, minimizing the execution time.
 
